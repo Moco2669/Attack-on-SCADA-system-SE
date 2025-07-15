@@ -21,7 +21,6 @@ class TestNormalTemperature(unittest.TestCase):
     def setUp(self):
         self.app = QApplication(sys.argv)
 
-        self.mock_server = self.mock_server
         self.mock_server.start()
 
         self.main_window = TableExample()
@@ -42,7 +41,6 @@ class TestNormalTemperature(unittest.TestCase):
         self.main_window.close()
         self.acquisition_thread.join(timeout=0.1)
         self.connect_thread.join(timeout=0.1)
-
 
     def test_temperature_display(self):
         table = self.main_window.tableWidget
