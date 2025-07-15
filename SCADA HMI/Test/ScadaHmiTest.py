@@ -7,7 +7,6 @@ from PyQt5.QtTest import QTest
 import ModbusMockServer
 import Connection
 import Acquisition
-from CustomWindow import main as start_scada_app
 from CustomWindow import TableExample
 from DataBase import base_info, signal_info
 

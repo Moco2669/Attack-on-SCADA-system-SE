@@ -27,6 +27,8 @@ class ModbusMockServer(ABC):
                 response = self.handle_request(data)
                 if response:
                     conn.sendall(response)
+        except (ConnectionResetError, BrokenPipeError):
+            pass
         finally:
             conn.close()
 
