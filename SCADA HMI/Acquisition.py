@@ -39,25 +39,29 @@ def Acquisition(base_info, signal_info):
     global predictionList
     global systemStateCounter
     global systemStatePrevious
-    while True:
+    while Connection.ConnectionHandler.isRunning:
         pack_request = packRequest(base_info, signal_info)
         for message in pack_request:
             address = findAddres(message)
             functionCode = int.from_bytes(message[7:8], byteorder="big", signed=False)
-            with Connection.ConnectionHandler.connection_lock:
-                try:
-                    Connection.ConnectionHandler.client.send(message)
-                    response = Connection.ConnectionHandler.client.recv(1024)
-                except:
-                    Connection.ConnectionHandler.isConnected = False
-                    Connection.ConnectionHandler.lostConnection.notify_all()
-                    Connection.ConnectionHandler.connected.wait()
-                    continue
-            op = eOperation(response, functionCode)
-            if op == False:
-                modbusresponse = repackReadResponse(response)
-                signal_info[address].setcurrentValue(modbusresponse.getData())
-
+            if Connection.ConnectionHandler.isConnected and Connection.ConnectionHandler.isRunning:
+                with Connection.ConnectionHandler.connection_lock:
+                    try:
+                        Connection.ConnectionHandler.client.send(message)
+                        response = Connection.ConnectionHandler.client.recv(1024)
+                    except:
+                        Connection.ConnectionHandler.isConnected = False
+                        if not Connection.ConnectionHandler.isRunning:
+                            break
+                        Connection.ConnectionHandler.lostConnection.notify_all()
+                        if not Connection.ConnectionHandler.isRunning:
+                            break
+                        Connection.ConnectionHandler.connected.wait()
+                        continue
+                op = eOperation(response, functionCode)
+                if op == False:
+                    modbusresponse = repackReadResponse(response)
+                    signal_info[address].setcurrentValue(modbusresponse.getData())
         #ovde se pozivao log
         #dataForCSV(signal_info)
 
@@ -81,10 +85,9 @@ def Acquisition(base_info, signal_info):
         elif systemStateCounter == 2 and np.any(systemStatePrevious[0] != systemStatePrevious[1]):
             systemStatePrevious.clear()
             systemStateCounter = 0
-
         Automation(signal_info, base_info)
         t.sleep(1)
-
+    print("Acquisition thread stopped.")
 
 """
 Uzima poslednje 3 vrednosti za prediktovanje 

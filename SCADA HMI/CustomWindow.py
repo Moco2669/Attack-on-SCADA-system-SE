@@ -80,7 +80,7 @@ class TableExample(QMainWindow):
         self.timer.start(500)
 
     def updateTable(self):
-        print(StateHolder.state)
+        #print(StateHolder.state)
         if Connection.ConnectionHandler.isConnected:
             self.label.setStyleSheet("background-color: green;")
         else:
@@ -128,9 +128,11 @@ class TableExample(QMainWindow):
 
     def closeEvent(self, event):
         Connection.ConnectionHandler.client.close()
+        Connection.ConnectionHandler.isRunning = False
 
 
 def main():
+    Connection.ConnectionHandler.isRunning = True
     app = QApplication(sys.argv)
     ex = TableExample()
     acquisition_thread = threading.Thread(target=Acquisition, args=(base_info, signal_info))
@@ -139,8 +141,23 @@ def main():
     connect_thr = threading.Thread(target=Connection.connect_thread, args=(base_info, 1))
     connect_thr.daemon = True
     connect_thr.start()
+    # acquisition_thread.join()
+    # connect_thr.join()
     sys.exit(app.exec_())
 
+def main2():
+    Connection.ConnectionHandler.isRunning = True
+    acquisition_thread = threading.Thread(target=Acquisition, args=(base_info, signal_info))
+    acquisition_thread.daemon = True
+    acquisition_thread.start()
+    connect_thr = threading.Thread(target=Connection.connect_thread, args=(base_info, 1))
+    connect_thr.daemon = True
+    connect_thr.start()
+    input("Press Enter to exit...")
+    Connection.ConnectionHandler.client.close()
+    Connection.ConnectionHandler.isRunning = False
+    acquisition_thread.join()
+    connect_thr.join()
 
 if __name__ == '__main__':
     main()

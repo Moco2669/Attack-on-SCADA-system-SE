@@ -1,3 +1,4 @@
+import socket
 import threading
 import time
 import unittest
@@ -19,10 +20,13 @@ class TestNormalTemperature(unittest.TestCase):
 
     def setUp(self):
         self.app = QApplication(sys.argv)
-
+        Connection.ConnectionHandler.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
         self.mock_server.start()
 
+
         self.main_window = TableExample()
+
+        Connection.ConnectionHandler.isRunning = True
 
         self.acquisition_thread = threading.Thread(
             target=Acquisition.Acquisition, args=(base_info, signal_info))
@@ -38,8 +42,14 @@ class TestNormalTemperature(unittest.TestCase):
         self.app.quit()
         self.mock_server.stop()
         self.main_window.close()
-        self.acquisition_thread.join(timeout=0.1)
-        self.connect_thread.join(timeout=0.1)
+        self.app.exit()
+        Connection.ConnectionHandler.isRunning = False
+        Connection.ConnectionHandler.isConnected = False
+        with Connection.ConnectionHandler.connection_lock:
+            Connection.ConnectionHandler.lostConnection.notify_all()
+            Connection.ConnectionHandler.connected.notify_all()
+        self.acquisition_thread.join()
+        self.connect_thread.join()
         time.sleep(3)
 
     def test_temperature_display(self):

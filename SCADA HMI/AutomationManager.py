@@ -109,16 +109,28 @@ def eOperation(message, fc):
 def AutomationLogic(signal_info, base_info, controlRodsAddress, command, functionCode = 5):
         base = ModbusBase(base_info["station_address"], functionCode) # 5
         request = ModbusWriteRequest(base,signal_info[controlRodsAddress].getStartAddress(),signal_info[controlRodsAddress].CurrentValue)
-        modbusWriteRequest = repackWrite(request,command) # if high alarm 0xff00 ,low alarm 0x0000
+        modbusWriteRequest = repackWrite(request,command)# if high alarm 0xff00 ,low alarm 0x0000
+        response = None
         with Connection.ConnectionHandler.connection_lock:
-            try:
-                Connection.ConnectionHandler.client.send(modbusWriteRequest)
-                response = Connection.ConnectionHandler.client.recv(1024)
-            except:
-                Connection.ConnectionHandler.isConnected = False
-                Connection.ConnectionHandler.lostConnection.notify_all()
-                Connection.ConnectionHandler.connected.wait()
-                return
+            if Connection.ConnectionHandler.isConnected:
+                if not Connection.ConnectionHandler.isRunning:
+                    return
+                try:
+                    Connection.ConnectionHandler.client.send(modbusWriteRequest)
+                    response = Connection.ConnectionHandler.client.recv(1024)
+                    if not response:
+                        return
+                except Exception as e:
+                    Connection.ConnectionHandler.isConnected = False
+                    Connection.ConnectionHandler.lostConnection.notify_all()
+                    print("SCADA DISCONNECTED")
+                    print(e)
+                    if not Connection.ConnectionHandler.isRunning:
+                        return
+                    Connection.ConnectionHandler.connected.wait()
+                    if not response or not Connection.ConnectionHandler.isRunning:
+                        return
+        if not response: return
         op = eOperation(response,functionCode)
         if op == False:
             modbusWriteResponse = repackResponse(response)

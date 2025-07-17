@@ -2,12 +2,17 @@ import socket
 import threading
 import time
 
+import Connection
+
 
 class ConnectionHandler(object):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
     isConnected = False
     connection_lock = threading.RLock()
     connected, lostConnection = threading.Condition(connection_lock), threading.Condition(connection_lock)
+    isRunning = True
+    running_lock = threading.RLock()
+    running_notify = threading.Condition(running_lock)
     """def connect(client,base_info):
     try:
         client.connect(('127.0.0.1', int(base_info["num_port"])))
@@ -24,7 +29,7 @@ class ConnectionHandler(object):
 
 
 def connect_thread(base_info, foo):
-    while True:
+    while ConnectionHandler.isRunning:
         if ConnectionHandler.isConnected == False:
             with ConnectionHandler.connection_lock:
                 try:
@@ -35,9 +40,10 @@ def connect_thread(base_info, foo):
                     ConnectionHandler.client.close()
                     ConnectionHandler.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
                 except Exception as e:
-                    print(f"An error occurred: {e}")
+                    # print(f"An error occurred: {e}")
                     ConnectionHandler.isConnected = False
                     time.sleep(0.5)
+    print("Connection thread stopped.")
 
 
 def disconnect(client):

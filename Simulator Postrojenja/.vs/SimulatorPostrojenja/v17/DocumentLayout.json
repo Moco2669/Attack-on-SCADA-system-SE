@@ -7,6 +7,14 @@
       "RelativeMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|solutionrelative:simulatorpostrojenja\\obradjivaci\\izvrsilacfunkcije.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|D:\\SNIMANJA\\FAKS JU\\SCHNEIDER PRAKSA\\Attack-on-SCADA-system-SE\\Simulator Postrojenja\\simulatorpostrojenja\\modbusstvari\\tipgreske.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|solutionrelative:simulatorpostrojenja\\modbusstvari\\tipgreske.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|D:\\SNIMANJA\\FAKS JU\\SCHNEIDER PRAKSA\\Attack-on-SCADA-system-SE\\Simulator Postrojenja\\simulatorpostrojenja\\realansistem\\uredjaj.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|solutionrelative:simulatorpostrojenja\\realansistem\\uredjaj.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|d:\\snimanja\\faks ju\\schneider praksa\\attack-on-scada-system-se\\simulator postrojenja\\simulatorpostrojenja\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|solutionrelative:simulatorpostrojenja\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -17,14 +25,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|D:\\SNIMANJA\\FAKS JU\\SCHNEIDER PRAKSA\\Attack-on-SCADA-system-SE\\Simulator Postrojenja\\simulatorpostrojenja\\realansistem\\postrojenje.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|solutionrelative:simulatorpostrojenja\\realansistem\\postrojenje.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|D:\\SNIMANJA\\FAKS JU\\SCHNEIDER PRAKSA\\Attack-on-SCADA-system-SE\\Simulator Postrojenja\\simulatorpostrojenja\\realansistem\\uredjaj.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|solutionrelative:simulatorpostrojenja\\realansistem\\uredjaj.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|D:\\SNIMANJA\\FAKS JU\\SCHNEIDER PRAKSA\\Attack-on-SCADA-system-SE\\Simulator Postrojenja\\simulatorpostrojenja\\modbusstvari\\tipgreske.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{33238F06-3EEC-45F5-9B9E-5A240FFBDC98}|SimulatorPostrojenja\\SimulatorPostrojenja.csproj|solutionrelative:simulatorpostrojenja\\modbusstvari\\tipgreske.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,7 +38,7 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 1,
               "Title": "TipGreske.cs",
               "DocumentMoniker": "D:\\SNIMANJA\\FAKS JU\\SCHNEIDER PRAKSA\\Attack-on-SCADA-system-SE\\Simulator Postrojenja\\SimulatorPostrojenja\\ModbusStvari\\TipGreske.cs",
               "RelativeDocumentMoniker": "SimulatorPostrojenja\\ModbusStvari\\TipGreske.cs",
@@ -51,7 +51,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 2,
               "Title": "Uredjaj.cs",
               "DocumentMoniker": "D:\\SNIMANJA\\FAKS JU\\SCHNEIDER PRAKSA\\Attack-on-SCADA-system-SE\\Simulator Postrojenja\\SimulatorPostrojenja\\RealanSistem\\Uredjaj.cs",
               "RelativeDocumentMoniker": "SimulatorPostrojenja\\RealanSistem\\Uredjaj.cs",
@@ -64,7 +64,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
               "Title": "Postrojenje.cs",
               "DocumentMoniker": "D:\\SNIMANJA\\FAKS JU\\SCHNEIDER PRAKSA\\Attack-on-SCADA-system-SE\\Simulator Postrojenja\\SimulatorPostrojenja\\RealanSistem\\Postrojenje.cs",
               "RelativeDocumentMoniker": "SimulatorPostrojenja\\RealanSistem\\Postrojenje.cs",
@@ -77,7 +77,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "TipUredjaja.cs",
               "DocumentMoniker": "D:\\SNIMANJA\\FAKS JU\\SCHNEIDER PRAKSA\\Attack-on-SCADA-system-SE\\Simulator Postrojenja\\SimulatorPostrojenja\\RealanSistem\\TipUredjaja.cs",
               "RelativeDocumentMoniker": "SimulatorPostrojenja\\RealanSistem\\TipUredjaja.cs",
@@ -96,14 +96,14 @@
               "RelativeDocumentMoniker": "SimulatorPostrojenja\\Obradjivaci\\IzvrsilacFunkcije.cs",
               "ToolTip": "D:\\SNIMANJA\\FAKS JU\\SCHNEIDER PRAKSA\\Attack-on-SCADA-system-SE\\Simulator Postrojenja\\SimulatorPostrojenja\\Obradjivaci\\IzvrsilacFunkcije.cs",
               "RelativeToolTip": "SimulatorPostrojenja\\Obradjivaci\\IzvrsilacFunkcije.cs",
-              "ViewState": "AgIAAFAAAAAAAAAAAAAqwFsAAAAfAAAAAAAAAA==",
+              "ViewState": "AgIAAFAAAAAAAAAAAAAqwGkAAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-03T08:04:28.847Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\SNIMANJA\\FAKS JU\\SCHNEIDER PRAKSA\\Attack-on-SCADA-system-SE\\Simulator Postrojenja\\SimulatorPostrojenja\\Program.cs",
               "RelativeDocumentMoniker": "SimulatorPostrojenja\\Program.cs",
