@@ -40,6 +40,7 @@ class TestNormalTemperature(unittest.TestCase):
         self.main_window.close()
         self.acquisition_thread.join(timeout=0.1)
         self.connect_thread.join(timeout=0.1)
+        time.sleep(3)
 
     def test_temperature_display(self):
         table = self.main_window.tableWidget

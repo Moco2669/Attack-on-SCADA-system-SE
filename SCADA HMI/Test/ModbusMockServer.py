@@ -11,7 +11,8 @@ class ModbusMockServer(ABC):
         self.server_thread = None
 
         self.analog_read = 0x04
-        self.digital_write = 0x01
+        self.digital_read = 0x01
+        self.digital_write = 0x05
 
     @abstractmethod
     def handle_request(self, request):
@@ -70,9 +71,12 @@ class NormalTemperatureModbusMockServer(ModbusMockServer):
             response = bytearray(request[:5])
             response.extend(b'\x05d\x04\x02\x01\x1a')
             return bytes(response)
-        elif function_code == self.digital_write:
+        elif function_code == self.digital_read:
             response = bytearray(request[:5])
             response.extend(b'\x04d\x01\x01\x00')
+            return bytes(response)
+        elif function_code == self.digital_write:
+            response = bytearray(request)
             return bytes(response)
 
         return b''
@@ -88,9 +92,12 @@ class HighTemperatureModbusMockServer(ModbusMockServer):
             response = bytearray(request[:5])
             response.extend(b'\x05d\x04\x02\x01m')
             return bytes(response)
-        elif function_code == self.digital_write:
+        elif function_code == self.digital_read:
             response = bytearray(request[:5])
             response.extend(b'\x04d\x01\x01\x01')
+            return bytes(response)
+        elif function_code == self.digital_write:
+            response = bytearray(request)
             return bytes(response)
 
         return b''
@@ -106,9 +113,12 @@ class LowTemperatureModbusMockServer(ModbusMockServer):
             response = bytearray(request[:5])
             response.extend(b'\x05d\x04\x02\x00-')
             return bytes(response)
-        elif function_code == self.digital_write:
+        elif function_code == self.digital_read:
             response = bytearray(request[:5])
             response.extend(b'\x04d\x01\x01\x00')
+            return bytes(response)
+        elif function_code == self.digital_write:
+            response = bytearray(request)
             return bytes(response)
 
         return b''
