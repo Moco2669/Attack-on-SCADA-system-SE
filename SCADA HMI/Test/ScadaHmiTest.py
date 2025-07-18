@@ -12,6 +12,8 @@ import Connection
 import Acquisition
 from CustomWindow import TableExample
 from DataBase import base_info, signal_info
+from Test.ScadaAppStartup import ScadaAppStartup
+
 
 class TestNormalTemperature(unittest.TestCase):
     @classmethod
@@ -24,38 +26,13 @@ class TestNormalTemperature(unittest.TestCase):
         cls.mock_server = ModbusMockServer.NormalTemperatureModbusMockServer()
 
     def setUp(self):
-        self.app = QApplication(sys.argv)
-        Connection.ConnectionHandler.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+        self.app = ScadaAppStartup()
+        self.app.run()
         self.mock_server.start()
 
-
-        self.main_window = TableExample()
-
-        Connection.ConnectionHandler.isRunning = True
-
-        self.acquisition_thread = threading.Thread(
-            target=Acquisition.Acquisition, args=(base_info, signal_info))
-        self.acquisition_thread.daemon = True
-        self.acquisition_thread.start()
-
-        self.connect_thread = threading.Thread(
-            target=Connection.connect_thread, args=(base_info, 1))
-        self.connect_thread.daemon = True
-        self.connect_thread.start()
-
     def tearDown(self):
-        self.app.quit()
         self.mock_server.stop()
-        self.main_window.close()
-        self.app.exit()
-        Connection.ConnectionHandler.isRunning = False
-        Connection.ConnectionHandler.isConnected = False
-        with Connection.ConnectionHandler.connection_lock:
-            Connection.ConnectionHandler.lostConnection.notify_all()
-            Connection.ConnectionHandler.connected.notify_all()
-        self.acquisition_thread.join()
-        self.connect_thread.join()
-        time.sleep(3)
+        self.app.stop()
 
     def test_temperature_display(self):
         result = self.query_gui_for(self.temperature,
@@ -70,7 +47,7 @@ class TestNormalTemperature(unittest.TestCase):
             if Connection.ConnectionHandler.isConnected:
                 break
             QTest.qWait(100)
-        label_style = self.main_window.label.styleSheet()
+        label_style = self.app.main_window.label.styleSheet()
         self.assertIn("background-color: green", label_style)
         self.assertTrue(True)
 
@@ -82,7 +59,7 @@ class TestNormalTemperature(unittest.TestCase):
         self.assertTrue(result, f"Alarms are not {self.temperature_alarm} and {self.control_rods_alarm}")
 
     def query_gui_for(self, temperature, control_rods, check_temperature, check_control_rods):
-        table = self.main_window.tableWidget
+        table = self.app.main_window.tableWidget
         for _ in range(30):
             table_data = self.get_table_data(table)
             if check_temperature(table_data, temperature) and check_control_rods(table_data, control_rods):
