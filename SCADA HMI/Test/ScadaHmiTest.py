@@ -58,15 +58,11 @@ class TestNormalTemperature(unittest.TestCase):
         time.sleep(3)
 
     def test_temperature_display(self):
-        table = self.main_window.tableWidget
-
-        for _ in range(30):
-            table_data = self.get_table_data(table)
-            if self.check_temperature(table_data, self.temperature) and self.check_control_rods(table_data, self.control_rods):
-                self.assertTrue(True, "Signals display fine")
-                return
-            QTest.qWait(100)
-        self.assertTrue(False, f"Signals are {table_data} and should be {self.temperature} and {self.control_rods}")
+        result = self.query_gui_for(self.temperature,
+                                    self.control_rods,
+                                    self.check_temperature,
+                                    self.check_control_rods)
+        self.assertTrue(result, f"Alarms are not {self.temperature} and {self.control_rods}")
 
     def test_app_runs_with_mock_server(self):
         QTest.qWait(4000)
@@ -79,14 +75,20 @@ class TestNormalTemperature(unittest.TestCase):
         self.assertTrue(True)
 
     def test_alarm(self):
+        result = self.query_gui_for(self.temperature_alarm,
+                                    self.control_rods_alarm,
+                                    self.check_temperature_alarm,
+                                    self.check_control_rods_alarm)
+        self.assertTrue(result, f"Alarms are not {self.temperature_alarm} and {self.control_rods_alarm}")
+
+    def query_gui_for(self, temperature, control_rods, check_temperature, check_control_rods):
         table = self.main_window.tableWidget
         for _ in range(30):
             table_data = self.get_table_data(table)
-            if self.check_temperature_alarm(table_data, self.temperature_alarm) and self.check_control_rods(table_data, self.control_rods):
-                self.assertTrue(True, "Alarms display fine")
-                return
+            if check_temperature(table_data, temperature) and check_control_rods(table_data, control_rods):
+                return True
             QTest.qWait(100)
-        self.assertTrue(False, f"Alarms are {table_data} and should be {self.temperature_alarm} and {self.control_rods}")
+        return False
 
     @staticmethod
     def check_temperature_alarm(data, value):
@@ -122,7 +124,7 @@ class TestHighTemperature(TestNormalTemperature):
         cls.control_rods = '1'
         cls.automation_request = b'\xff\x00'
         cls.temperature_alarm = "HIGH ALARM"
-        cls.control_rods_alarm = "LOW ALARM"
+        cls.control_rods_alarm = "NO ALARM"
         cls.mock_server = ModbusMockServer.HighTemperatureModbusMockServer()
 
     def test_automation_logic(self):
