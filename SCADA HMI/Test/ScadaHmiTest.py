@@ -3,6 +3,8 @@ import threading
 import time
 import unittest
 import sys
+from typing import override
+
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtTest import QTest
 import ModbusMockServer
@@ -16,6 +18,7 @@ class TestNormalTemperature(unittest.TestCase):
     def setUpClass(cls):
         cls.temperature = '282'
         cls.control_rods = '0'
+        cls.automation_request = b'\x00\x00'
         cls.mock_server = ModbusMockServer.NormalTemperatureModbusMockServer()
 
     def setUp(self):
@@ -97,14 +100,30 @@ class TestHighTemperature(TestNormalTemperature):
     def setUpClass(cls):
         cls.temperature = '365'
         cls.control_rods = '1'
+        cls.automation_request = b'\xff\x00'
         cls.mock_server = ModbusMockServer.HighTemperatureModbusMockServer()
+
+    def test_automation_logic(self):
+        with self.mock_server.write_requests_condition:
+            while not self.mock_server.write_requests:
+                self.mock_server.write_requests_condition.wait()
+            request = self.mock_server.write_requests[-1]
+        self.assertTrue((request[-2:] == self.automation_request), f"Automation is sending {request[-2:]} to the server, expected {self.automation_request}")
 
 class TestLowTemperature(TestNormalTemperature):
     @classmethod
     def setUpClass(cls):
         cls.temperature = '45'
         cls.control_rods = '0'
+        cls.automation_request = b'\x00\x00'
         cls.mock_server = ModbusMockServer.LowTemperatureModbusMockServer()
+
+    def test_automation_logic(self):
+        with self.mock_server.write_requests_condition:
+            while not self.mock_server.write_requests:
+                self.mock_server.write_requests_condition.wait()
+            request = self.mock_server.write_requests[-1]
+        self.assertTrue((request[-2:] == self.automation_request), f"Automation is sending {request[-2:]} to the server, expected {self.automation_request}")
 
 if __name__ == '__main__':
     unittest.main()

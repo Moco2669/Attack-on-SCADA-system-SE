@@ -10,6 +10,9 @@ class ModbusMockServer(ABC):
         self.running = False
         self.server_thread = None
         self.client_thread = None
+        self.write_requests = []
+        self.write_requests_lock = threading.RLock()
+        self.write_requests_condition = threading.Condition(self.write_requests_lock)
 
         self.analog_read = 0x04
         self.digital_read = 0x01
@@ -36,6 +39,7 @@ class ModbusMockServer(ABC):
             conn.close()
 
     def start(self):
+        self.write_requests = []
         self.running = True
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -67,6 +71,11 @@ class ModbusMockServer(ABC):
             self.client_thread.join()
         print("Mock server FULLY stopped.")
 
+    def store(self, request):
+        with self.write_requests_lock:
+            self.write_requests.append(request)
+            self.write_requests_condition.notify_all()
+
 class NormalTemperatureModbusMockServer(ModbusMockServer):
     def handle_request(self, request):
         if len(request) < 8:
@@ -83,6 +92,7 @@ class NormalTemperatureModbusMockServer(ModbusMockServer):
             response.extend(b'\x04d\x01\x01\x00')
             return bytes(response)
         elif function_code == self.digital_write:
+            self.store(request)
             response = bytearray(request)
             return bytes(response)
 
@@ -104,6 +114,7 @@ class HighTemperatureModbusMockServer(ModbusMockServer):
             response.extend(b'\x04d\x01\x01\x01')
             return bytes(response)
         elif function_code == self.digital_write:
+            self.store(request)
             response = bytearray(request)
             return bytes(response)
 
@@ -125,6 +136,7 @@ class LowTemperatureModbusMockServer(ModbusMockServer):
             response.extend(b'\x04d\x01\x01\x00')
             return bytes(response)
         elif function_code == self.digital_write:
+            self.store(request)
             response = bytearray(request)
             return bytes(response)
 
