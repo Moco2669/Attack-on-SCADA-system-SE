@@ -64,7 +64,13 @@ class TestNormalTemperature(unittest.TestCase):
         self.assertTrue(False, "Signals never had the appropriate value")
 
     def test_app_runs_with_mock_server(self):
-        QTest.qWait(5000)
+        QTest.qWait(4000)
+        for _ in range(30):
+            if Connection.ConnectionHandler.isConnected:
+                break
+            QTest.qWait(100)
+        label_style = self.main_window.label.styleSheet()
+        self.assertIn("background-color: green", label_style)
         self.assertTrue(True)
 
     @staticmethod
