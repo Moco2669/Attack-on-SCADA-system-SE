@@ -19,6 +19,8 @@ class TestNormalTemperature(unittest.TestCase):
         cls.temperature = '282'
         cls.control_rods = '0'
         cls.automation_request = b'\x00\x00'
+        cls.temperature_alarm = "NO ALARM"
+        cls.control_rods_alarm = "NO ALARM"
         cls.mock_server = ModbusMockServer.NormalTemperatureModbusMockServer()
 
     def setUp(self):
@@ -64,7 +66,7 @@ class TestNormalTemperature(unittest.TestCase):
                 self.assertTrue(True, "Signals display fine")
                 return
             QTest.qWait(100)
-        self.assertTrue(False, "Signals never had the appropriate value")
+        self.assertTrue(False, f"Signals are {table_data} and should be {self.temperature} and {self.control_rods}")
 
     def test_app_runs_with_mock_server(self):
         QTest.qWait(4000)
@@ -76,9 +78,27 @@ class TestNormalTemperature(unittest.TestCase):
         self.assertIn("background-color: green", label_style)
         self.assertTrue(True)
 
+    def test_alarm(self):
+        table = self.main_window.tableWidget
+        for _ in range(30):
+            table_data = self.get_table_data(table)
+            if self.check_temperature_alarm(table_data, self.temperature_alarm) and self.check_control_rods(table_data, self.control_rods):
+                self.assertTrue(True, "Alarms display fine")
+                return
+            QTest.qWait(100)
+        self.assertTrue(False, f"Alarms are {table_data} and should be {self.temperature_alarm} and {self.control_rods}")
+
+    @staticmethod
+    def check_temperature_alarm(data, value):
+        return data[1][4] == value
+
     @staticmethod
     def check_temperature(data, value):
         return data[1][3] == value
+
+    @staticmethod
+    def check_control_rods_alarm(data, value):
+        return data[0][4] == value
 
     @staticmethod
     def check_control_rods(data, value):
@@ -101,6 +121,8 @@ class TestHighTemperature(TestNormalTemperature):
         cls.temperature = '365'
         cls.control_rods = '1'
         cls.automation_request = b'\xff\x00'
+        cls.temperature_alarm = "HIGH ALARM"
+        cls.control_rods_alarm = "LOW ALARM"
         cls.mock_server = ModbusMockServer.HighTemperatureModbusMockServer()
 
     def test_automation_logic(self):
@@ -116,6 +138,8 @@ class TestLowTemperature(TestNormalTemperature):
         cls.temperature = '45'
         cls.control_rods = '0'
         cls.automation_request = b'\x00\x00'
+        cls.temperature_alarm = "LOW ALARM"
+        cls.control_rods_alarm = "NO ALARM"
         cls.mock_server = ModbusMockServer.LowTemperatureModbusMockServer()
 
     def test_automation_logic(self):
