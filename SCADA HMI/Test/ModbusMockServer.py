@@ -1,4 +1,5 @@
 import csv
+import random
 import socket
 import threading
 from abc import ABC, abstractmethod
@@ -177,7 +178,7 @@ class NormalState(ModbusMockServer):
 class CommandInjection(ModbusMockServer):
     def __init__(self):
         super().__init__()
-        self.temperature = 350
+        self.temperature = 360
         self.control_rods = 1
 
     def handle_request(self, request):
@@ -199,6 +200,44 @@ class CommandInjection(ModbusMockServer):
         elif function_code == self.digital_read:
             response = bytearray(request[:5])
             response.extend(b'\x04d\x01\x01\x00')
+            return bytes(response)
+        elif function_code == self.digital_write:
+            response = bytearray(request)
+            return bytes(response)
+
+        return b''
+
+class ReplayAttack(ModbusMockServer):
+    def __init__(self):
+        super().__init__()
+        self.data = [{256: 0}, {235: 0}, {307:1}, {351: 0}, {278: 0}, {311: 0}, {325: 1}, {300: 1}, {333: 1}]
+        self.read_requests = 0
+
+    def data_iterator(self):
+        return self.data[self.read_requests % len(self.data)]
+
+    def handle_request(self, request):
+        if len(request) < 8:
+            return b''
+
+        function_code = request[7]
+
+        if function_code == self.analog_read:
+            self.read_requests += 1
+            response = bytearray(request[:5])
+            response.extend(b'\x05d\x04\x02')
+            temperature = next(iter(self.data_iterator().keys()))
+            packed_bytes = bytearray([
+                (temperature >> 8) & 0xFF,
+                temperature & 0xFF
+            ])
+            response.extend(packed_bytes)
+            return bytes(response)
+        elif function_code == self.digital_read:
+            response = bytearray(request[:5])
+            response.extend(b'\x04d\x01\x01')
+            control_rods = next(iter(self.data_iterator().values()))
+            response.extend(b'\x00' if control_rods == 0 else b'\x01')
             return bytes(response)
         elif function_code == self.digital_write:
             response = bytearray(request)

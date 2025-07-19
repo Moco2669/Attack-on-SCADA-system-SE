@@ -13,12 +13,14 @@ from DataBase import base_info, signal_info
 
 class ScadaAppStartup:
     def __init__(self):
-        self.app = QApplication(sys.argv) or QApplication.instance()
+        self.app = QApplication([])
         self.main_window = None
         self.acquisition_thread = None
         self.connect_thr = None
 
     def run(self):
+        if self.app is None:
+            self.app = QApplication([]) or QApplication.instance()
         self.main_window = CustomWindow.TableExample()
         Connection.ConnectionHandler.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
         Connection.ConnectionHandler.isRunning = True
@@ -30,9 +32,9 @@ class ScadaAppStartup:
         self.connect_thr.start()
 
     def stop(self):
-        # self.app.quit()
+        #self.app.quit()
         self.main_window.close()
-        # self.app.exit()
+        #self.app.exit()
         Connection.ConnectionHandler.isRunning = False
         Connection.ConnectionHandler.isConnected = False
         with Connection.ConnectionHandler.connection_lock:
