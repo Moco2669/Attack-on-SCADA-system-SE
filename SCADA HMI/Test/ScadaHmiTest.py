@@ -3,6 +3,7 @@ from PyQt5.QtTest import QTest
 import ModbusMockServer
 import Connection
 from Test.ScadaAppStartup import ScadaAppStartup
+from Acquisition import StateHolder
 
 
 class TestNormalTemperature(unittest.TestCase):
@@ -118,11 +119,37 @@ class TestLowTemperature(TestNormalTemperature):
             request = self.mock_server.write_requests[-1]
         self.assertTrue((request[-2:] == self.automation_request), f"Automation is sending {request[-2:]} to the server, expected {self.automation_request}")
 
-"""class TestMLNormalTemperature(unittest.TestCase):
+class TestMLNormalState(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.state_report = "NORMLAL STATE"
-        cls.mock_server = ModbusMockServer.NormalState()"""
+        cls.state_report = "NORMAL STATE"
+        cls.mock_server = ModbusMockServer.NormalState()
+
+    def setUp(self):
+        StateHolder.state = "NORMAL STATE"
+        self.app = ScadaAppStartup()
+        self.app.run()
+        self.mock_server.start()
+
+    def tearDown(self):
+        self.mock_server.stop()
+        self.app.stop()
+
+    def test_state_report(self):
+        normal_state_counter = 0
+        QTest.qWait(1000)
+        for _ in range(17):
+            label_text = self.app.main_window.label1.text()
+            if self.state_report in label_text:
+                normal_state_counter += 1
+            QTest.qWait(1000)
+        self.assertGreaterEqual(normal_state_counter, 10, f"{self.state_report} not reported enough times")
+
+class TestMLCommandInjection(TestMLNormalState):
+    @classmethod
+    def setUpClass(cls):
+        cls.state_report = "COMMAND INJECTION"
+        cls.mock_server = ModbusMockServer.CommandInjection()
 
 if __name__ == '__main__':
     unittest.main()

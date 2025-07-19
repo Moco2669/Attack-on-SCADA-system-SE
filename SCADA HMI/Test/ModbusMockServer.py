@@ -1,3 +1,4 @@
+import csv
 import socket
 import threading
 from abc import ABC, abstractmethod
@@ -137,6 +138,69 @@ class LowTemperature(ModbusMockServer):
             return bytes(response)
         elif function_code == self.digital_write:
             self.store(request)
+            response = bytearray(request)
+            return bytes(response)
+
+        return b''
+
+class NormalState(ModbusMockServer):
+    def __init__(self):
+        super().__init__()
+        self.temperature = 260
+
+    def handle_request(self, request):
+        if len(request) < 8:
+            return b''
+
+        function_code = request[7]
+
+        if function_code == self.analog_read:
+            self.temperature += 5
+            response = bytearray(request[:5])
+            response.extend(b'\x05d\x04\x02')
+            packed_bytes = bytearray([
+                (self.temperature >> 8) & 0xFF,
+                self.temperature & 0xFF
+            ])
+            response.extend(packed_bytes)
+            return bytes(response)
+        elif function_code == self.digital_read:
+            response = bytearray(request[:5])
+            response.extend(b'\x04d\x01\x01\x00')
+            return bytes(response)
+        elif function_code == self.digital_write:
+            response = bytearray(request)
+            return bytes(response)
+
+        return b''
+
+class CommandInjection(ModbusMockServer):
+    def __init__(self):
+        super().__init__()
+        self.temperature = 350
+        self.control_rods = 1
+
+    def handle_request(self, request):
+        if len(request) < 8:
+            return b''
+
+        function_code = request[7]
+
+        if function_code == self.analog_read:
+            self.temperature += 5
+            response = bytearray(request[:5])
+            response.extend(b'\x05d\x04\x02')
+            packed_bytes = bytearray([
+                (self.temperature >> 8) & 0xFF,
+                self.temperature & 0xFF
+            ])
+            response.extend(packed_bytes)
+            return bytes(response)
+        elif function_code == self.digital_read:
+            response = bytearray(request[:5])
+            response.extend(b'\x04d\x01\x01\x00')
+            return bytes(response)
+        elif function_code == self.digital_write:
             response = bytearray(request)
             return bytes(response)
 
