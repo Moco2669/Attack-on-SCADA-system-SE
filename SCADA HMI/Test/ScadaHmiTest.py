@@ -1,17 +1,7 @@
-import socket
-import threading
-import time
 import unittest
-import sys
-from typing import override
-
-from PyQt5.QtWidgets import QApplication
 from PyQt5.QtTest import QTest
 import ModbusMockServer
 import Connection
-import Acquisition
-from CustomWindow import TableExample
-from DataBase import base_info, signal_info
 from Test.ScadaAppStartup import ScadaAppStartup
 
 
