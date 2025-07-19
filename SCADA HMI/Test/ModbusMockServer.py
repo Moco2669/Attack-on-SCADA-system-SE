@@ -76,7 +76,7 @@ class ModbusMockServer(ABC):
             self.write_requests.append(request)
             self.write_requests_condition.notify_all()
 
-class NormalTemperatureModbusMockServer(ModbusMockServer):
+class NormalTemperature(ModbusMockServer):
     def handle_request(self, request):
         if len(request) < 8:
             return b''
@@ -98,7 +98,7 @@ class NormalTemperatureModbusMockServer(ModbusMockServer):
 
         return b''
 
-class HighTemperatureModbusMockServer(ModbusMockServer):
+class HighTemperature(ModbusMockServer):
     def handle_request(self, request):
         if len(request) < 8:
             return b''
@@ -120,7 +120,7 @@ class HighTemperatureModbusMockServer(ModbusMockServer):
 
         return b''
 
-class LowTemperatureModbusMockServer(ModbusMockServer):
+class LowTemperature(ModbusMockServer):
     def handle_request(self, request):
         if len(request) < 8:
             return b''
@@ -141,11 +141,3 @@ class LowTemperatureModbusMockServer(ModbusMockServer):
             return bytes(response)
 
         return b''
-
-if __name__ == '__main__':
-    mock = NormalTemperatureModbusMockServer()
-    mock_thread = threading.Thread(target=mock.start)
-    mock_thread.start()
-    input("Press Enter to stop the mock server...")
-    mock.stop()
-    mock_thread.join()

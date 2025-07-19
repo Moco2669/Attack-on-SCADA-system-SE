@@ -13,7 +13,7 @@ class TestNormalTemperature(unittest.TestCase):
         cls.automation_request = b'\x00\x00'
         cls.temperature_alarm = "NO ALARM"
         cls.control_rods_alarm = "NO ALARM"
-        cls.mock_server = ModbusMockServer.NormalTemperatureModbusMockServer()
+        cls.mock_server = ModbusMockServer.NormalTemperature()
 
     def setUp(self):
         self.app = ScadaAppStartup()
@@ -92,7 +92,7 @@ class TestHighTemperature(TestNormalTemperature):
         cls.automation_request = b'\xff\x00'
         cls.temperature_alarm = "HIGH ALARM"
         cls.control_rods_alarm = "NO ALARM"
-        cls.mock_server = ModbusMockServer.HighTemperatureModbusMockServer()
+        cls.mock_server = ModbusMockServer.HighTemperature()
 
     def test_automation_logic(self):
         with self.mock_server.write_requests_condition:
@@ -109,7 +109,7 @@ class TestLowTemperature(TestNormalTemperature):
         cls.automation_request = b'\x00\x00'
         cls.temperature_alarm = "LOW ALARM"
         cls.control_rods_alarm = "NO ALARM"
-        cls.mock_server = ModbusMockServer.LowTemperatureModbusMockServer()
+        cls.mock_server = ModbusMockServer.LowTemperature()
 
     def test_automation_logic(self):
         with self.mock_server.write_requests_condition:
@@ -117,6 +117,12 @@ class TestLowTemperature(TestNormalTemperature):
                 self.mock_server.write_requests_condition.wait()
             request = self.mock_server.write_requests[-1]
         self.assertTrue((request[-2:] == self.automation_request), f"Automation is sending {request[-2:]} to the server, expected {self.automation_request}")
+
+"""class TestMLNormalTemperature(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.state_report = "NORMLAL STATE"
+        cls.mock_server = ModbusMockServer.NormalState()"""
 
 if __name__ == '__main__':
     unittest.main()
