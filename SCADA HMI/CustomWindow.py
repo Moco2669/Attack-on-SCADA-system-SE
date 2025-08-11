@@ -1,4 +1,6 @@
 import sys
+from turtledemo.clock import setup
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QHeaderView, QVBoxLayout, QWidget,QDesktopWidget
 import Connection
 from DataBase import *
@@ -13,38 +15,42 @@ import threading
 import Connection
 
 
-class TableExample(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.tableWidget = None
         self.initUI()
 
-    def initUI(self):
+    def setUpWindow(self):
         self.setGeometry(100, 100, 800, 600)
         self.setWindowTitle('SCADA-HMI')
 
+    def makeCentralWidget(self):
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
-        layout = QVBoxLayout()
+        return central_widget
 
-        # Create a QTableWidget with 5 columns and make it an instance variable
-        self.tableWidget = QTableWidget(0, 5)
-        self.tableWidget.setHorizontalHeaderLabels(["Name", "Type", "Address", "Value", "Alarm"])
-
-        # Make the table non-editable
-        self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
-
-        layout.addWidget(self.tableWidget)
-
-        # Calculate the desired height (70% of screen height) and convert it to an integer
-
+    def makeTable(self):
+        table = QTableWidget(0, 5)
+        table.setHorizontalHeaderLabels(["Name", "Type", "Address", "Value", "Alarm"])
+        table.setEditTriggers(QTableWidget.NoEditTriggers)
         screen_geometry = QGuiApplication.primaryScreen().availableGeometry()
         table_height = int(screen_geometry.height() * 0.7)
-        self.tableWidget.setGeometry(0, 0, screen_geometry.width(), table_height)
+        table.setGeometry(0, 0, screen_geometry.width(), table_height)
+        for col in range(table.columnCount()):
+            table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Stretch)
+        return table
+
+    def initUI(self):
+        self.setUpWindow()
+
+        central_widget = self.makeCentralWidget()
+
+        self.tableWidget = self.makeTable()
+        layout = QVBoxLayout()
+        layout.addWidget(self.tableWidget)
 
         central_widget.setLayout(layout)
-
-        for col in range(self.tableWidget.columnCount()):
-            self.tableWidget.horizontalHeader().setSectionResizeMode(col, QHeaderView.Stretch)
 
         tuplesForPrint = makeTuplesForPrint(signal_info)
         data = list()
@@ -134,7 +140,7 @@ class TableExample(QMainWindow):
 def main():
     Connection.ConnectionHandler.isRunning = True
     app = QApplication(sys.argv)
-    ex = TableExample()
+    ex = MainWindow()
     acquisition_thread = threading.Thread(target=Acquisition, args=(base_info, signal_info))
     acquisition_thread.daemon = True  # koristi se za niti koje rade u pozadini
     acquisition_thread.start()

@@ -21,7 +21,7 @@ class ScadaAppStartup:
     def run(self):
         if self.app is None:
             self.app = QApplication([]) or QApplication.instance()
-        self.main_window = CustomWindow.TableExample()
+        self.main_window = CustomWindow.MainWindow()
         Connection.ConnectionHandler.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
         Connection.ConnectionHandler.isRunning = True
         self.acquisition_thread = threading.Thread(target=Acquisition, args=(base_info, signal_info))
