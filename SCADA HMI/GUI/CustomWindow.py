@@ -19,7 +19,6 @@ class MainWindow(QMainWindow):
         self.connectionStatusLabel = ConnectionLabel()
         self.attackDetectionLabel = DetectionLabel()
         self.updateTimer = UpdateTimer(self)
-        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.init_ui()
 
     def set_up_window(self):
@@ -48,6 +47,7 @@ class MainWindow(QMainWindow):
         self.set_up_window()
         layout = self.make_layout_with(self.make_status_bar())
         self.make_central_widget_with(layout)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self.updateTimer.start(500)
 
@@ -64,31 +64,26 @@ class MainWindow(QMainWindow):
         else:
             self.attackDetectionLabel.normal_state(StateHolder.state)
 
-        data = makeTuplesForPrint(signal_info)  # fresh info
-
+        data = makeTuplesForPrint(signal_info)
         self.table.setRowCount(0)  # brise poslednje podatke
+        font = QFont()
         for row, item in enumerate(data):  # update
             self.table.insertRow(row)
             for col, text in enumerate(item):
                 item_widget = QTableWidgetItem(text)
                 if text == "HIGH ALARM":
                     item_widget.setForeground(QColor(255, 0, 0))  # Red color
-                    font = QFont()
                     font.setBold(True)
                     item_widget.setFont(font)
-                    self.table.setItem(row, col, item_widget)
                 elif text == "LOW ALARM":
                     item_widget.setForeground(QColor(255, 0, 0))  # Red color
-                    font = QFont()
                     font.setBold(True)
                     item_widget.setFont(font)
-                    self.table.setItem(row, col, item_widget)
                 else:
                     item_widget.setForeground(QColor(0, 0, 0))
-                    font = QFont()
                     font.setBold(False)
                     item_widget.setFont(font)
-                    self.table.setItem(row, col, item_widget)
+                self.table.setItem(row, col, item_widget)
 
     def closeEvent(self, event):
         Connection.ConnectionHandler.client.close()
