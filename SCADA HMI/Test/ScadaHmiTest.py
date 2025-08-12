@@ -3,7 +3,6 @@ from PyQt5.QtTest import QTest
 import ModbusMockServer
 import Connection
 from Application import Application
-from Test.ScadaAppStartup import ScadaAppStartup
 from Acquisition import StateHolder
 
 
@@ -18,8 +17,7 @@ class TestNormalTemperature(unittest.TestCase):
         cls.mock_server = ModbusMockServer.NormalTemperature()
 
     def setUp(self):
-        self.app = ScadaAppStartup()
-        self.app.run()
+        self.app = Application()
         self.mock_server.start()
 
     def tearDown(self):
@@ -137,8 +135,7 @@ class TestMLNormalState(unittest.TestCase):
 
     def setUp(self):
         StateHolder.state = "NORMAL STATE"
-        self.app = ScadaAppStartup()
-        self.app.run()
+        self.app = Application()
         self.mock_server.start()
 
     def tearDown(self):

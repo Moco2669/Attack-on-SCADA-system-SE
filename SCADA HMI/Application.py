@@ -16,7 +16,7 @@ class Application:
         self.main_window = None
         self.acquisition_thread = None
         self.connection_thread = None
-        #self.run()
+        self.run()
 
     def run(self):
         self.q_app = QApplication.instance()
