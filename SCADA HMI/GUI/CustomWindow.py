@@ -53,17 +53,11 @@ class MainWindow(QMainWindow):
 
         self.show()
 
+    def update_gui(self):
+        self.update_status_bar()
+        self.update_table()
+
     def update_table(self):
-        if Connection.ConnectionHandler.isConnected:
-            self.connectionStatusLabel.connected()
-        else:
-            self.connectionStatusLabel.disconnected()
-
-        if StateHolder.state in ("COMMAND INJECTION", "REPLAY ATTACK"):
-            self.attackDetectionLabel.abnormal_state(StateHolder.state)
-        else:
-            self.attackDetectionLabel.normal_state(StateHolder.state)
-
         data = makeTuplesForPrint(signal_info)
         self.table.setRowCount(0)  # brise poslednje podatke
         font = QFont()
@@ -71,24 +65,29 @@ class MainWindow(QMainWindow):
             self.table.insertRow(row)
             for col, text in enumerate(item):
                 item_widget = QTableWidgetItem(text)
-                if text == "HIGH ALARM":
+                if text == "HIGH ALARM" or text == "LOW ALARM":
                     item_widget.setForeground(QColor(255, 0, 0))  # Red color
                     font.setBold(True)
-                    item_widget.setFont(font)
-                elif text == "LOW ALARM":
-                    item_widget.setForeground(QColor(255, 0, 0))  # Red color
-                    font.setBold(True)
-                    item_widget.setFont(font)
                 else:
                     item_widget.setForeground(QColor(0, 0, 0))
                     font.setBold(False)
-                    item_widget.setFont(font)
+                item_widget.setFont(font)
                 self.table.setItem(row, col, item_widget)
+
+    def update_status_bar(self):
+        if Connection.ConnectionHandler.isConnected:
+            self.connectionStatusLabel.connected()
+        else:
+            self.connectionStatusLabel.disconnected()
+        if StateHolder.state in ("COMMAND INJECTION", "REPLAY ATTACK"):
+            self.attackDetectionLabel.abnormal_state(StateHolder.state)
+        else:
+            self.attackDetectionLabel.normal_state(StateHolder.state)
 
     def closeEvent(self, event):
         Connection.ConnectionHandler.client.close()
         Connection.ConnectionHandler.isRunning = False
-        self.updateTimer.timeout.disconnect(self.update_table)
+        self.updateTimer.timeout.disconnect(self.update_gui)
         self.updateTimer.stop()
         self.close()
         event.accept()
