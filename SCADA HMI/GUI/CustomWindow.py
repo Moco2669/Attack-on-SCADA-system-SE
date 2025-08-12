@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QVBoxLayout, QWidget, QHBoxLayout
 from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt
 from Acquisition import *
 import threading
 import Connection
@@ -19,7 +19,7 @@ class MainWindow(QMainWindow):
         self.connectionStatusLabel = ConnectionLabel()
         self.attackDetectionLabel = DetectionLabel()
         self.updateTimer = UpdateTimer(self)
-        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.init_ui()
 
     def set_up_window(self):
@@ -70,21 +70,15 @@ class MainWindow(QMainWindow):
         for row, item in enumerate(data):  # update
             self.table.insertRow(row)
             for col, text in enumerate(item):
-                # self.table.setItem(row, col, QTableWidgetItem(text))
                 item_widget = QTableWidgetItem(text)
                 if text == "HIGH ALARM":
-                    # Set the text color to red
                     item_widget.setForeground(QColor(255, 0, 0))  # Red color
-
-                    # Set the font to bold
                     font = QFont()
                     font.setBold(True)
                     item_widget.setFont(font)
                     self.table.setItem(row, col, item_widget)
                 elif text == "LOW ALARM":
                     item_widget.setForeground(QColor(255, 0, 0))  # Red color
-
-                    # Set the font to bold
                     font = QFont()
                     font.setBold(True)
                     item_widget.setFont(font)

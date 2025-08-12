@@ -7,5 +7,5 @@ class StatusBarLabel(QLabel):
     def __init__(self):
         super().__init__("")
         self.setFont(QFont("Helvetica", 10, QFont.Bold))
-        self.setAlignment(Qt.AlignCenter)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setFixedHeight(30)

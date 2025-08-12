@@ -1,9 +1,7 @@
 import socket
 import sys
 import threading
-
 from PyQt5.QtWidgets import QApplication
-
 import Connection
 from Acquisition import Acquisition
 from DataBase import base_info, signal_info
