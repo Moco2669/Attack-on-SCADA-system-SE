@@ -1,8 +1,7 @@
 import sys
-from PyQt5.QtWidgets import QHeaderView
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidget, QTableWidgetItem, QVBoxLayout, QLabel, QWidget, QHBoxLayout
-from PyQt5.QtGui import QGuiApplication, QFont
+from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QVBoxLayout, QWidget, QHBoxLayout
+from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt, QTimer
 from Acquisition import *
 import threading
@@ -10,6 +9,7 @@ import Connection
 from GUI.ConnectionLabel import ConnectionLabel
 from GUI.DetectionLabel import DetectionLabel
 from GUI.RegisterTable import RegisterTable
+from GUI.UpdateTimer import UpdateTimer
 
 
 class MainWindow(QMainWindow):
@@ -18,7 +18,7 @@ class MainWindow(QMainWindow):
         self.table = RegisterTable()
         self.connectionStatusLabel = ConnectionLabel()
         self.attackDetectionLabel = DetectionLabel()
-        self.statusBar = self.make_status_bar()
+        self.updateTimer = UpdateTimer(self)
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.init_ui()
 
@@ -38,21 +38,18 @@ class MainWindow(QMainWindow):
         status_bar.addWidget(self.attackDetectionLabel)
         return status_bar
 
-    def make_layout(self):
+    def make_layout_with(self, status_bar):
         layout = QVBoxLayout()
         layout.addWidget(self.table)
-        layout.addLayout(self.statusBar)
+        layout.addLayout(status_bar)
         return layout
 
     def init_ui(self):
         self.set_up_window()
-        layout = self.make_layout()
+        layout = self.make_layout_with(self.make_status_bar())
         self.make_central_widget_with(layout)
 
-        # okida na svake 0.5 sek update tabele
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_table)
-        self.timer.start(500)
+        self.updateTimer.start(500)
 
         self.show()
 
@@ -67,9 +64,8 @@ class MainWindow(QMainWindow):
         else:
             self.attackDetectionLabel.normal_state(StateHolder.state)
 
-        tuples = makeTuplesForPrint(signal_info)  # fresh info
-        data = list()
-        data.extend(tuples)
+        data = makeTuplesForPrint(signal_info)  # fresh info
+
         self.table.setRowCount(0)  # brise poslednje podatke
         for row, item in enumerate(data):  # update
             self.table.insertRow(row)
@@ -103,6 +99,8 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         Connection.ConnectionHandler.client.close()
         Connection.ConnectionHandler.isRunning = False
+        self.updateTimer.timeout.disconnect(self.update_table)
+        self.updateTimer.stop()
         self.close()
         event.accept()
 
