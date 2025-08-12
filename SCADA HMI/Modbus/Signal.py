@@ -1,17 +1,17 @@
-class Signal():
-    def __init__(self, reg_type, num_reg, StartAddress, MinV, MaxV, StartV, SignalType, MinAlarm, MaxAlarm,name):
+class Signal:
+    def __init__(self, reg_type, num_reg, start_address, min_value, max_value, start_value, signal_type, low_alarm, high_alarm, register_name):
         self._Reg_type = reg_type
         self._Num_reg = num_reg
-        self._StartAddress = StartAddress
-        self._MinValue = MinV
-        self._MaxValue = MaxV
-        self._StartV = StartV
-        self._SignalType = SignalType
-        self._MinAlarm = MinAlarm
-        self._MaxAlarm = MaxAlarm
-        self._Name = name
+        self._StartAddress = start_address
+        self._MinValue = min_value
+        self._MaxValue = max_value
+        self._StartV = start_value
+        self._SignalType = signal_type
+        self._MinAlarm = low_alarm
+        self._MaxAlarm = high_alarm
+        self._Name = register_name
         self._AlarmNow = "NO ALARM"
-        self.CurrentValue = StartV
+        self.CurrentValue = start_value
     def AlarmNow(self):
         return self._AlarmNow
 
