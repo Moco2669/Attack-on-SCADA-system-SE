@@ -5,7 +5,7 @@ class Signal:
         self._StartAddress = start_address
         self._MinValue = min_value
         self._MaxValue = max_value
-        self._StartV = start_value
+        self._StartValue = start_value
         self._SignalType = signal_type
         self._MinAlarm = low_alarm
         self._MaxAlarm = high_alarm
@@ -13,83 +13,100 @@ class Signal:
         self._AlarmNow = "NO ALARM"
         self.CurrentValue = start_value
 
+    @property
     def alarm(self):
         return self._AlarmNow
 
-    def Modify_Alrm(self,alarm):
+    @alarm.setter
+    def alarm(self,alarm):
         self._AlarmNow = alarm
 
-    def Name(self):
-        return self.Name
+    @property
+    def name(self):
+        return self._Name
 
-    def Name(self,name):
-        self.Name = name
+    @name.setter
+    def name(self, value):
+        self._Name = value
 
-    def Reg_type(self):
+    @property
+    def reg_type(self):
         return self._Reg_type
 
-    def Reg_type(self, value):
+    @reg_type.setter
+    def reg_type(self, value):
         self._Reg_type = value
 
-    def getNum_reg(self):
+    @property
+    def num_reg(self):
         return self._Num_reg
 
-    def setNum_reg(self, value):
+    @num_reg.setter
+    def num_reg(self, value):
         self._Num_reg = value
 
-    Num_reg = property(getNum_reg,setNum_reg)
-
-    def getStartAddress(self):
+    @property
+    def start_address(self):
         return self._StartAddress
 
-    def setStartAddress(self, value):
+    @start_address.setter
+    def start_address(self, value):
         self._StartAddress = value
 
-    StartAddress = property(getStartAddress,setStartAddress)
-
-    def MinValue(self):
+    @property
+    def min_value(self):
         return self._MinValue
 
-    def MinValue(self, value):
+    @min_value.setter
+    def min_value(self, value):
         self._MinValue = value
 
-    def MaxValue(self):
+    @property
+    def max_value(self):
         return self._MaxValue
 
-    def MaxValue(self, value):
+    @max_value.setter
+    def max_value(self, value):
         self._MaxValue = value
 
-    def StartV(self):
-        return self._StartV
+    @property
+    def start_value(self):
+        return self._StartValue
 
-    def StartV(self, value):
-        self._StartV = value
+    @start_value.setter
+    def start_value(self, value):
+        self._StartValue = value
 
-    def getSignalType(self):
+    @property
+    def signal_type(self):
         return self._SignalType
 
-    def setSignalType(self, value):
+    @signal_type.setter
+    def signal_type(self, value):
         self._SignalType = value
 
-    SignalType = property(getSignalType,setSignalType)
-
-    def getMinAlarm(self):
+    @property
+    def min_alarm(self):
         return self._MinAlarm
 
-    def setMinAlarm(self, value):
+    @min_alarm.setter
+    def min_alarm(self, value):
         self._MinAlarm = value
 
-    MinAlarm = property(getMinAlarm,setMinAlarm)
-    def getMaxAlarm(self):
+    @property
+    def max_alarm(self):
         return self._MaxAlarm
-    def setMaxAlarm(self, value):
+
+    @max_alarm.setter
+    def max_alarm(self, value):
         self._MaxAlarm = value
 
-    MaxAlarm = property(getMaxAlarm,setMaxAlarm)
-    def getcurrentValue(self):
+    @property
+    def current_value(self):
         return self.CurrentValue
 
-    def setcurrentValue(self,value):
+    @current_value.setter
+    def current_value(self, value) -> None:
         if value < self._MinValue:
             self.CurrentValue = self._MinValue
         elif value > self._MaxValue:
@@ -98,13 +115,11 @@ class Signal:
             self.CurrentValue = value
         if self._MinAlarm != "NO ALARM" and self._MaxAlarm != "NO ALARM":
             if self.CurrentValue <= self._MinAlarm:
-                self.Modify_Alrm("LOW ALARM")
+                self.alarm = "LOW ALARM"
             elif self.CurrentValue >= self._MaxAlarm:
-                self.Modify_Alrm("HIGH ALARM")
+                self.alarm = "HIGH ALARM"
             else:
-                self.Modify_Alrm("NO ALARM")
-
-    currentValue = property(getcurrentValue,setcurrentValue)
+                self.alarm = "NO ALARM"
 
     def __str__(self):
-        return f"Signal Info: Reg_type: {self._Reg_type},Num_reg: {self._Num_reg},StartAddress: {self._StartAddress},MinValue: {self._MinValue},MaxValue: {self._MaxValue},StartV: {self._StartV},SignalType: {self._SignalType},MinAlarm: {self._MinAlarm},MaxAlarm: {self._MaxAlarm},Name:{self._Name}, CurrentValue:{self.CurrentValue}"
+        return f"Signal Info: Reg_type: {self._Reg_type},Num_reg: {self._Num_reg},StartAddress: {self._StartAddress},MinValue: {self._MinValue},MaxValue: {self._MaxValue},StartV: {self._StartValue},SignalType: {self._SignalType},MinAlarm: {self._MinAlarm},MaxAlarm: {self._MaxAlarm},Name:{self._Name}, CurrentValue:{self.CurrentValue}"

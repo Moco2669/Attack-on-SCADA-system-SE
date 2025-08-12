@@ -61,7 +61,7 @@ def Acquisition(base_info, signal_info):
                 op = eOperation(response, functionCode)
                 if op == False:
                     modbusresponse = repackReadResponse(response)
-                    signal_info[address].setcurrentValue(modbusresponse.getData())
+                    signal_info[address].current_value = modbusresponse.getData()
         #ovde se pozivao log
         #dataForCSV(signal_info)
 
@@ -101,11 +101,11 @@ def takeValuesForPredict(signal_info:dict):
     global predictionList
     if counter != 3:
         for key,value in signal_info.items():
-            match signal_info[key].getSignalType():
+            match signal_info[key].signal_type:
                 case "DO":
-                    controlRodsList.append(signal_info[key].getcurrentValue())
+                    controlRodsList.append(signal_info[key].current_value)
                 case "AI":
-                    waterThermometerList.append(signal_info[key].getcurrentValue())
+                    waterThermometerList.append(signal_info[key].current_value)
         counter+=1
     else:
         counter = 0
@@ -125,11 +125,11 @@ def dataForCSV(signal_info : dict):
     global waterThermometerList
     if counter != 3:
         for key,value in signal_info.items():
-            match signal_info[key].getSignalType():
+            match signal_info[key].signal_type:
                 case "DO":
-                    controlRodsList.append(signal_info[key].getcurrentValue())
+                    controlRodsList.append(signal_info[key].current_value())
                 case "AI":
-                    waterThermometerList.append(signal_info[key].getcurrentValue())
+                    waterThermometerList.append(signal_info[key].current_value())
         counter+=1
     else:
         counter = 0

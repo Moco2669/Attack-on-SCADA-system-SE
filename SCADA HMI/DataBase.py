@@ -30,7 +30,7 @@ def makeTuplesForPrint(signal_info):
                 type = "Analog Input"
             # mora ovako zato sto nece da ispisuje nesto sto nije int qt
         address = str(value._StartAddress)
-        pocetna = str(value.getcurrentValue())
-        alarm = value.alarm()
+        pocetna = str(value.current_value)
+        alarm = value.alarm
         tuple_list.append((name,type,address,pocetna,alarm))
     return tuple_list

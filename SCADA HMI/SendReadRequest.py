@@ -14,7 +14,7 @@ def packRequest(base_info, signal_info):
     list_of_request = list()
     for i in range(0, len(signals_in_list)):
         function_code = -1
-        match signals_in_list[i].SignalType:
+        match signals_in_list[i].signal_type:
             case "DO":
                 function_code = 1
             case "DI":
@@ -24,7 +24,7 @@ def packRequest(base_info, signal_info):
             case "AI":
                 function_code = 4
         base = ModbusBase(unitID, function_code)
-        request = ModbusReadRequest(base, signals_in_list[i].StartAddress, signals_in_list[i].Num_reg)
+        request = ModbusReadRequest(base, signals_in_list[i].start_address, signals_in_list[i].num_reg)
         list_of_request.append(repack(request))
 
     return list_of_request

@@ -23,7 +23,7 @@ U slucaju da se promeni adresa iz configa
 
 def takeControlRodsAddress(signal_info):
     for key, value in signal_info.items():
-      if value[key].getSignalType() == "DO":
+      if value[key].signal_type == "DO":
           return key
 
 
@@ -35,7 +35,7 @@ U slucaju da se promeni adresa iz configa
 
 def takeWaterThermometerAddress(signal_info):
     for key,value in signal_info.items():
-        if value[key].getSignalType() == "AI":
+        if value[key].signal_type == "AI":
             return key
 
 
@@ -67,7 +67,7 @@ Kako bi se voda ohladila
 
 
 def isHighAlarmActive(waterThermometerAddress, signal_info):
-    return int(signal_info[waterThermometerAddress].CurrentValue) >= int(signal_info[waterThermometerAddress].getMaxAlarm())
+    return int(signal_info[waterThermometerAddress].CurrentValue) >= int(signal_info[waterThermometerAddress].max_alarm)
 
 """
 Proverava da li je low alarm aktiviran 
@@ -77,7 +77,7 @@ Kako bi se povecao broj hemijskih reakcija ==> voda se zagreva
 
 
 def isLowAlarmActive(waterThermometerAddress, signal_info):
-    return int(signal_info[waterThermometerAddress].CurrentValue) <= int(signal_info[waterThermometerAddress].getMinAlarm())
+    return int(signal_info[waterThermometerAddress].CurrentValue) <= int(signal_info[waterThermometerAddress].min_alarm)
 
 
 """
@@ -108,7 +108,7 @@ def eOperation(message, fc):
 
 def AutomationLogic(signal_info, base_info, controlRodsAddress, command, functionCode = 5):
         base = ModbusBase(base_info["station_address"], functionCode) # 5
-        request = ModbusWriteRequest(base,signal_info[controlRodsAddress].getStartAddress(),signal_info[controlRodsAddress].CurrentValue)
+        request = ModbusWriteRequest(base,signal_info[controlRodsAddress].start_address ,signal_info[controlRodsAddress].CurrentValue)
         modbusWriteRequest = repackWrite(request,command)# if high alarm 0xff00 ,low alarm 0x0000
         response = None
         with Connection.ConnectionHandler.connection_lock:
@@ -135,7 +135,7 @@ def AutomationLogic(signal_info, base_info, controlRodsAddress, command, functio
         if op == False:
             modbusWriteResponse = repackResponse(response)
             if (compareWriteRequestAndResponse(request, modbusWriteResponse)):
-                signal_info[controlRodsAddress].setcurrentValue(command)
+                signal_info[controlRodsAddress].current_value(command)
 
 
 """
