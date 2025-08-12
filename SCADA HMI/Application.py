@@ -47,5 +47,4 @@ class Application:
 
 if __name__ == "__main__":
     app = Application()
-    app.run()
     sys.exit(app.q_app.exec_())
