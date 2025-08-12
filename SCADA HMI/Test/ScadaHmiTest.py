@@ -2,6 +2,7 @@ import unittest
 from PyQt5.QtTest import QTest
 import ModbusMockServer
 import Connection
+from Application import Application
 from Test.ScadaAppStartup import ScadaAppStartup
 from Acquisition import StateHolder
 
@@ -50,7 +51,7 @@ class TestNormalTemperature(unittest.TestCase):
         self.assertTrue(result, f"Alarms are not {self.temperature_alarm} and {self.control_rods_alarm}")
 
     def query_gui_for(self, temperature, control_rods, check_temperature, check_control_rods):
-        table = self.app.main_window.tableWidget
+        table = self.app.main_window.table
         for _ in range(30):
             table_data = self.get_table_data(table)
             if check_temperature(table_data, temperature) and check_control_rods(table_data, control_rods):
