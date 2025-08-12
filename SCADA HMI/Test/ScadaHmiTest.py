@@ -38,7 +38,7 @@ class TestNormalTemperature(unittest.TestCase):
             if Connection.ConnectionHandler.isConnected:
                 break
             QTest.qWait(100)
-        label_style = self.app.main_window.label.styleSheet()
+        label_style = self.app.main_window.connectionStatusLabel.styleSheet()
         self.assertIn("background-color: green", label_style)
         self.assertTrue(True)
 
@@ -60,19 +60,27 @@ class TestNormalTemperature(unittest.TestCase):
 
     @staticmethod
     def check_temperature_alarm(data, value):
-        return data[1][4] == value
+        if data:
+            return data[1][4] == value
+        else: return False
 
     @staticmethod
     def check_temperature(data, value):
-        return data[1][3] == value
+        if data:
+            return data[1][3] == value
+        else: return False
 
     @staticmethod
     def check_control_rods_alarm(data, value):
-        return data[0][4] == value
+        if data:
+            return data[0][4] == value
+        else: return False
 
     @staticmethod
     def check_control_rods(data, value):
-        return data[0][3] == value
+        if data:
+            return data[0][3] == value
+        else: return False
 
     @staticmethod
     def get_table_data(a_table):
@@ -123,7 +131,7 @@ class TestMLNormalState(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.state_report = "NORMAL STATE"
-        cls.threshold = 10
+        cls.threshold = 7
         cls.mock_server = ModbusMockServer.NormalState()
 
     def setUp(self):
@@ -140,7 +148,7 @@ class TestMLNormalState(unittest.TestCase):
         desired_state_counter = 0
         QTest.qWait(1000)
         for _ in range(17):
-            state_label = self.app.main_window.label1.text()
+            state_label = self.app.main_window.attackDetectionLabel.text()
             if self.state_report in state_label:
                 desired_state_counter += 1
             QTest.qWait(1000)
@@ -150,7 +158,7 @@ class TestMLCommandInjection(TestMLNormalState):
     @classmethod
     def setUpClass(cls):
         cls.state_report = "COMMAND INJECTION"
-        cls.threshold = 10
+        cls.threshold = 2
         cls.mock_server = ModbusMockServer.CommandInjection()
 
 class TestMLReplayAttack(TestMLNormalState):

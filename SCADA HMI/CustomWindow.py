@@ -25,9 +25,10 @@ class MainWindow(QMainWindow):
         self.setGeometry(100, 100, 800, 600)
         self.setWindowTitle('SCADA-HMI')
 
-    def makeCentralWidget(self):
+    def centralWidgetWith(self, layout):
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
+        central_widget.setLayout(layout)
         return central_widget
 
     def makeTable(self):
@@ -41,42 +42,33 @@ class MainWindow(QMainWindow):
             table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Stretch)
         return table
 
+    def layoutWith(self, table):
+        layout = QVBoxLayout()
+        layout.addWidget(table)
+        return layout
+
     def initUI(self):
         self.setUpWindow()
-
-        central_widget = self.makeCentralWidget()
-
         self.tableWidget = self.makeTable()
-        layout = QVBoxLayout()
-        layout.addWidget(self.tableWidget)
+        layout = self.layoutWith(self.tableWidget)
+        central_widget = self.centralWidgetWith(layout)
 
-        central_widget.setLayout(layout)
 
-        tuplesForPrint = makeTuplesForPrint(signal_info)
-        data = list()
-        data.extend(tuplesForPrint)
 
-        for row, item in enumerate(data):
-            self.tableWidget.insertRow(row)
-            for col, text in enumerate(item):
-                self.tableWidget.setItem(row, col, QTableWidgetItem(text))
-
-        self.show()
-
-        # Create a QHBoxLayout to place the "CONNECTED" label and the time label side by side
+        # Create a QHBoxLayout to place the "CONNECTED" connectionStatusLabel and the time connectionStatusLabel side by side
         hbox = QHBoxLayout()
 
-        # Create the "CONNECTED" label
-        self.label = QLabel("CONNECTED")
-        self.label1 = QLabel(f"STATE OF SYSTEM:{StateHolder.state}")
-        self.label1.setFont(QFont("Helvetica", 10, QFont.Bold))
-        self.label.setFont(QFont("Helvetica", 10, QFont.Bold))
-        self.label.setAlignment(Qt.AlignCenter)
-        self.label1.setAlignment(Qt.AlignCenter)
-        # Set a fixed height for the label
-        self.label.setFixedHeight(30)
-        hbox.addWidget(self.label)
-        hbox.addWidget(self.label1)
+        # Create the "CONNECTED" connectionStatusLabel
+        self.connectionStatusLabel = QLabel("CONNECTED")
+        self.attackDetectionLabel = QLabel(f"STATE OF SYSTEM:{StateHolder.state}")
+        self.attackDetectionLabel.setFont(QFont("Helvetica", 10, QFont.Bold))
+        self.connectionStatusLabel.setFont(QFont("Helvetica", 10, QFont.Bold))
+        self.connectionStatusLabel.setAlignment(Qt.AlignCenter)
+        self.attackDetectionLabel.setAlignment(Qt.AlignCenter)
+        # Set a fixed height for the connectionStatusLabel
+        self.connectionStatusLabel.setFixedHeight(30)
+        hbox.addWidget(self.connectionStatusLabel)
+        hbox.addWidget(self.attackDetectionLabel)
 
         layout.addLayout(hbox)
 
@@ -85,19 +77,21 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.updateTable)
         self.timer.start(500)
 
+        self.show()
+
     def updateTable(self):
         #print(StateHolder.state)
         if Connection.ConnectionHandler.isConnected:
-            self.label.setStyleSheet("background-color: green;")
+            self.connectionStatusLabel.setStyleSheet("background-color: green;")
         else:
-            self.label.setStyleSheet("background-color: red")
+            self.connectionStatusLabel.setStyleSheet("background-color: red")
 
         if StateHolder.state in ("COMMAND INJECTION", "REPLAY ATTACK"):
-            self.label1.setStyleSheet("background-color: red")
-            self.label1.setText(f"STATE OF SYSTEM: {StateHolder.state}")
+            self.attackDetectionLabel.setStyleSheet("background-color: red")
+            self.attackDetectionLabel.setText(f"STATE OF SYSTEM: {StateHolder.state}")
         else:
-            self.label1.setStyleSheet("background-color: green;")
-            self.label1.setText(f"STATE OF SYSTEM: {StateHolder.state}")
+            self.attackDetectionLabel.setStyleSheet("background-color: green;")
+            self.attackDetectionLabel.setText(f"STATE OF SYSTEM: {StateHolder.state}")
 
         tuples = makeTuplesForPrint(signal_info)  # fresh info
         data = list()
