@@ -12,7 +12,8 @@ class Signal:
         self._Name = register_name
         self._AlarmNow = "NO ALARM"
         self.CurrentValue = start_value
-    def AlarmNow(self):
+
+    def alarm(self):
         return self._AlarmNow
 
     def Modify_Alrm(self,alarm):
@@ -89,7 +90,19 @@ class Signal:
         return self.CurrentValue
 
     def setcurrentValue(self,value):
-        self.CurrentValue = value
+        if value < self._MinValue:
+            self.CurrentValue = self._MinValue
+        elif value > self._MaxValue:
+            self.CurrentValue = self._MaxValue
+        else:
+            self.CurrentValue = value
+        if self._MinAlarm != "NO ALARM" and self._MaxAlarm != "NO ALARM":
+            if self.CurrentValue <= self._MinAlarm:
+                self.Modify_Alrm("LOW ALARM")
+            elif self.CurrentValue >= self._MaxAlarm:
+                self.Modify_Alrm("HIGH ALARM")
+            else:
+                self.Modify_Alrm("NO ALARM")
 
     currentValue = property(getcurrentValue,setcurrentValue)
 
