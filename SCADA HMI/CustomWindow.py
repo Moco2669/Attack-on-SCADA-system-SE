@@ -1,15 +1,9 @@
 import sys
-from turtledemo.clock import setup
-
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QHeaderView, QVBoxLayout, QWidget,QDesktopWidget
-import Connection
-from DataBase import *
-from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtWidgets import QHeaderView
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidget, QTableWidgetItem, QVBoxLayout, QLabel, QWidget, QHBoxLayout
 from PyQt5.QtGui import QGuiApplication, QFont
-from PyQt5.QtCore import Qt, QTimer, QDateTime, QTimeZone,pyqtSignal,QObject
-from Connection import *
-import socket
+from PyQt5.QtCore import Qt, QTimer
 from Acquisition import *
 import threading
 import Connection
@@ -18,20 +12,23 @@ import Connection
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.tableWidget = None
-        self.initUI()
+        self.tableWidget = self.make_table()
+        self.connectionStatusLabel = self.make_connection_status_label()
+        self.attackDetectionLabel = self.make_detection_label()
+        self.statusBar = self.make_status_bar()
+        self.init_ui()
 
-    def setUpWindow(self):
+    def set_up_window(self):
         self.setGeometry(100, 100, 800, 600)
         self.setWindowTitle('SCADA-HMI')
 
-    def centralWidgetWith(self, layout):
+    def make_central_widget_with(self, layout):
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
         central_widget.setLayout(layout)
         return central_widget
 
-    def makeTable(self):
+    def make_table(self):
         table = QTableWidget(0, 5)
         table.setHorizontalHeaderLabels(["Name", "Type", "Address", "Value", "Alarm"])
         table.setEditTriggers(QTableWidget.NoEditTriggers)
@@ -42,45 +39,47 @@ class MainWindow(QMainWindow):
             table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Stretch)
         return table
 
-    def layoutWith(self, table):
+    def make_connection_status_label(self):
+        connection_status_label = QLabel("CONNECTED")
+        connection_status_label.setFont(QFont("Helvetica", 10, QFont.Bold))
+        connection_status_label.setAlignment(Qt.AlignCenter)
+        connection_status_label.setStyleSheet("background-color: green;")
+        connection_status_label.setFixedHeight(30)
+        return connection_status_label
+
+    def make_detection_label(self):
+        attack_detection_label = QLabel(f"STATE OF SYSTEM:{StateHolder.state}")
+        attack_detection_label.setFont(QFont("Helvetica", 10, QFont.Bold))
+        attack_detection_label.setAlignment(Qt.AlignCenter)
+        attack_detection_label.setFixedHeight(30)
+        return attack_detection_label
+
+    def make_status_bar(self):
+        status_bar = QHBoxLayout()
+        status_bar.addWidget(self.connectionStatusLabel)
+        status_bar.addWidget(self.attackDetectionLabel)
+        return status_bar
+
+
+    def layout_with(self, table, status_bar):
         layout = QVBoxLayout()
         layout.addWidget(table)
+        layout.addLayout(status_bar)
         return layout
 
-    def initUI(self):
-        self.setUpWindow()
-        self.tableWidget = self.makeTable()
-        layout = self.layoutWith(self.tableWidget)
-        central_widget = self.centralWidgetWith(layout)
-
-
-
-        # Create a QHBoxLayout to place the "CONNECTED" connectionStatusLabel and the time connectionStatusLabel side by side
-        hbox = QHBoxLayout()
-
-        # Create the "CONNECTED" connectionStatusLabel
-        self.connectionStatusLabel = QLabel("CONNECTED")
-        self.attackDetectionLabel = QLabel(f"STATE OF SYSTEM:{StateHolder.state}")
-        self.attackDetectionLabel.setFont(QFont("Helvetica", 10, QFont.Bold))
-        self.connectionStatusLabel.setFont(QFont("Helvetica", 10, QFont.Bold))
-        self.connectionStatusLabel.setAlignment(Qt.AlignCenter)
-        self.attackDetectionLabel.setAlignment(Qt.AlignCenter)
-        # Set a fixed height for the connectionStatusLabel
-        self.connectionStatusLabel.setFixedHeight(30)
-        hbox.addWidget(self.connectionStatusLabel)
-        hbox.addWidget(self.attackDetectionLabel)
-
-        layout.addLayout(hbox)
+    def init_ui(self):
+        self.set_up_window()
+        layout = self.layout_with(self.tableWidget, self.statusBar)
+        self.make_central_widget_with(layout)
 
         # okida na svake 0.5 sek update tabele
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.updateTable)
+        self.timer.timeout.connect(self.update_table)
         self.timer.start(500)
 
         self.show()
 
-    def updateTable(self):
-        #print(StateHolder.state)
+    def update_table(self):
         if Connection.ConnectionHandler.isConnected:
             self.connectionStatusLabel.setStyleSheet("background-color: green;")
         else:
