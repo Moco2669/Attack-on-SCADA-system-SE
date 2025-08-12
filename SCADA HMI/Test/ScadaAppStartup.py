@@ -1,9 +1,8 @@
 import socket
-import sys
 import threading
 
 import Connection
-import CustomWindow
+from GUI import CustomWindow
 
 from PyQt5.QtWidgets import QApplication
 
