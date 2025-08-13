@@ -1,7 +1,5 @@
 import sys
-from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QVBoxLayout, QWidget, QHBoxLayout
-from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QWidget, QHBoxLayout
 from PyQt5.QtCore import Qt
 from Acquisition import *
 import threading
@@ -74,6 +72,10 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         Connection.ConnectionHandler.client.close()
         Connection.ConnectionHandler.isRunning = False
+        Connection.ConnectionHandler.isConnected = False
+        with Connection.ConnectionHandler.connection_lock:
+            Connection.ConnectionHandler.lostConnection.notify_all()
+            Connection.ConnectionHandler.connected.notify_all()
         self.updateTimer.timeout.disconnect(self.update_gui)
         self.updateTimer.stop()
         self.close()

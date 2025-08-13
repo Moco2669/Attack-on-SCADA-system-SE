@@ -2,10 +2,8 @@ import socket
 import threading
 import time
 
-import Connection
 
-
-class ConnectionHandler(object):
+class ConnectionHandler:
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
     isConnected = False
     connection_lock = threading.RLock()
