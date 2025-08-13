@@ -63,7 +63,7 @@ def Acquisition(base_info, signal_info):
                     modbusresponse = repackReadResponse(response)
                     signal_info[address].current_value = modbusresponse.getData()
         #ovde se pozivao log
-        #dataForCSV(signal_info)
+        #dataForCSV(registers)
 
         takeValuesForPredict(signal_info)
         if len(predictionList) == 6:

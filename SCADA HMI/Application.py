@@ -4,7 +4,7 @@ import threading
 from PyQt5.QtWidgets import QApplication
 import Connection
 from Acquisition import Acquisition
-from DataBase import base_info, signal_info
+from DataBase import base_info, registers
 from GUI import CustomWindow
 
 
@@ -23,7 +23,7 @@ class Application:
         self.main_window = CustomWindow.MainWindow()
         Connection.ConnectionHandler.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
         Connection.ConnectionHandler.isRunning = True
-        self.acquisition_thread = threading.Thread(target=Acquisition, args=(base_info, signal_info))
+        self.acquisition_thread = threading.Thread(target=Acquisition, args=(base_info, registers))
         self.acquisition_thread.start()
         self.connection_thread = threading.Thread(target=Connection.connect_thread, args=(base_info, 1))
         self.connection_thread.start()
