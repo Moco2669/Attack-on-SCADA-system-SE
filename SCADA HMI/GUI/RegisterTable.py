@@ -1,5 +1,6 @@
-from PyQt5.QtGui import QGuiApplication
+from PyQt5.QtGui import QGuiApplication, QFont, QColor
 from PyQt5.QtWidgets import QTableWidget, QHeaderView, QTableWidgetItem
+from GUI.TableRow import TableRow
 
 
 class RegisterTable(QTableWidget):
@@ -13,11 +14,8 @@ class RegisterTable(QTableWidget):
         for col in range(self.columnCount()):
             self.horizontalHeader().setSectionResizeMode(col, QHeaderView.Stretch)
 
-    def set_data(self, data):
-        self.setRowCount(len(data))
-        for row, (register_name, register_type, starting_address, signal_value, alarm) in enumerate(data):
-            self.setItem(row, 0, QTableWidgetItem(register_name))
-            self.setItem(row, 1, QTableWidgetItem(register_type))
-            self.setItem(row, 2, QTableWidgetItem(starting_address))
-            self.setItem(row, 3, QTableWidgetItem(signal_value))
-            self.setItem(row, 4, QTableWidgetItem(alarm))
+    def set_data(self, rows : list[TableRow]):
+        self.setRowCount(len(rows))
+        for row in range(len(rows)):
+            for column in range(rows[row].num_of_fields):
+                self.setItem(row, column, rows[row].table_items[column])

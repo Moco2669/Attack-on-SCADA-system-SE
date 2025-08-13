@@ -18,7 +18,7 @@ class Signal:
         return self._AlarmNow
 
     @alarm.setter
-    def alarm(self,alarm):
+    def alarm(self, alarm):
         self._AlarmNow = alarm
 
     @property
@@ -80,6 +80,19 @@ class Signal:
     @property
     def signal_type(self):
         return self._SignalType
+
+    @property
+    def signal_type_string(self):
+        if self._SignalType == "DO":
+            return "Digital Output"
+        elif self._SignalType == "DI":
+            return "Digital Input"
+        elif self._SignalType == "AO":
+            return "Analog Output"
+        elif self._SignalType == "AI":
+            return "Analog Input"
+        else:
+            return "Unknown Signal Type"
 
     @signal_type.setter
     def signal_type(self, value):

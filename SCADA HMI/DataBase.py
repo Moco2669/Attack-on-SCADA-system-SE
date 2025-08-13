@@ -1,3 +1,4 @@
+from GUI.TableRow import TableRow
 from LoadConfig import *
 from Modbus.Signal import *
 """
@@ -15,22 +16,7 @@ base_info, signal_info = load_cfg('cfg.txt')
 
 
 def makeTuplesForPrint(signal_info):
-    tuple_list = list()
-    for key, value in signal_info.items():
-        name = value._Name
-        type = value._SignalType
-        match value._SignalType:
-            case "DO":
-                type = "Digital Output"
-            case "DI":
-                type = "Digital Input"
-            case "AO":
-                type = "Analog Output"
-            case "AI":
-                type = "Analog Input"
-            # mora ovako zato sto nece da ispisuje nesto sto nije int qt
-        address = str(value._StartAddress)
-        pocetna = str(value.current_value)
-        alarm = value.alarm
-        tuple_list.append((name,type,address,pocetna,alarm))
-    return tuple_list
+    row_list = list()
+    for key, signal in signal_info.items():
+        row_list.append(TableRow(signal))
+    return row_list

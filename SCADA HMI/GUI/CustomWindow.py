@@ -59,20 +59,7 @@ class MainWindow(QMainWindow):
 
     def update_table(self):
         data = makeTuplesForPrint(signal_info)
-        self.table.setRowCount(0)  # brise poslednje podatke
-        font = QFont()
-        for row, item in enumerate(data):  # update
-            self.table.insertRow(row)
-            for col, text in enumerate(item):
-                item_widget = QTableWidgetItem(text)
-                if text == "HIGH ALARM" or text == "LOW ALARM":
-                    item_widget.setForeground(QColor(255, 0, 0))  # Red color
-                    font.setBold(True)
-                else:
-                    item_widget.setForeground(QColor(0, 0, 0))
-                    font.setBold(False)
-                item_widget.setFont(font)
-                self.table.setItem(row, col, item_widget)
+        self.table.set_data(data)
 
     def update_status_bar(self):
         if Connection.ConnectionHandler.isConnected:
