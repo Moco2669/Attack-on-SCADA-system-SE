@@ -11,7 +11,7 @@ class ModbusReadReasponse(ModbusBase):
                  base : ModbusBase,
                  ByteCount : ctypes.c_byte,
                  Data : bytearray ):
-        super().__init__(base.UnitID,base.FunctionCode)
+        super().__init__(base.UnitID, base.FunctionCode)
         self.ByteCount = ByteCount
         self.Data = Data
     def __str__(self):

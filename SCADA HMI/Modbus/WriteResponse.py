@@ -8,7 +8,7 @@ class ModbusWriteResponse(ModbusBase):
                  base : ModbusBase,
                  RegisterAdress : ctypes.c_ushort,
                  RegisterValue : ctypes.c_ushort):
-        super().__init__(base.UnitID,base.FunctionCode)
+        super().__init__(base.UnitID, base.FunctionCode)
         self.RegisterAdress = RegisterAdress
         self.RegisterValue  = RegisterValue
 

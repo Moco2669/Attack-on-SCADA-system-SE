@@ -19,14 +19,13 @@ functionCode - >Procitaj digitalni izlaz 0x01
 """
 
 class ModbusBase:
-    def __init__(self,
-                 UnitID:ctypes.c_byte,
-                 FunctionCode:ctypes.c_byte):
+    def __init__(self, unit_id: ctypes.c_byte, function_code: ctypes.c_byte):
         self.TransactionID = 0 #ushort
         self.ProtocolID = 0 #ushort
         self.Length = 2 #ushort
-        self.UnitID = UnitID
-        self.FunctionCode = FunctionCode
+        self.UnitID = unit_id
+        self.FunctionCode = function_code
+
     def __str__(self):
         return f"TransactionID:{self.TransactionID},ProtocolID:{self.ProtocolID},Length:{self.Length},UnitID:{self.UnitID},FunctionCode:{self.FunctionCode}"
 

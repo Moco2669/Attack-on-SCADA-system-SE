@@ -107,7 +107,7 @@ def eOperation(message, fc):
 
 
 def AutomationLogic(signal_info, base_info, controlRodsAddress, command, functionCode = 5):
-        base = ModbusBase(base_info["station_address"], functionCode) # 5
+        base = ModbusBase(base_info["station_address"], functionCode)  # 5
         request = ModbusWriteRequest(base,signal_info[controlRodsAddress].start_address ,signal_info[controlRodsAddress].CurrentValue)
         modbusWriteRequest = repackWrite(request,command)# if high alarm 0xff00 ,low alarm 0x0000
         response = None
