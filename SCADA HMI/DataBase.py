@@ -15,8 +15,17 @@ base_info, signal_info = load_cfg('cfg.txt')
 """
 
 
-def makeTuplesForPrint(signal_info):
+def get_rows_for_print(signal_info):
     row_list = list()
     for key, signal in signal_info.items():
         row_list.append(TableRow(signal))
     return row_list
+
+
+class DataBase:
+    def __init__(self):
+        self.base_info = None
+        self.signal_info = None
+
+    def load_data(self, file_name):
+        self.base_info, self.signal_info = load_cfg(file_name)

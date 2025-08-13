@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
         self.update_table()
 
     def update_table(self):
-        data = makeTuplesForPrint(signal_info)
+        data = get_rows_for_print(signal_info)
         self.table.set_data(data)
 
     def update_status_bar(self):

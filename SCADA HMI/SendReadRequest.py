@@ -8,7 +8,6 @@ import time
 
 
 def packRequest(base_info, signal_info):
-
     unitID = base_info["station_address"]
     signals_in_list = list(signal_info.values())
     list_of_request = list()
