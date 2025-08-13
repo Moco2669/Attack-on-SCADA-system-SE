@@ -7,13 +7,10 @@ Objekat koji ce primati read odgovore
 """
 
 class ModbusReadReasponse(ModbusBase):
-    def __init__(self,
-                 base : ModbusBase,
-                 ByteCount : ctypes.c_byte,
-                 Data : bytearray ):
+    def __init__(self, base : ModbusBase, byte_count : ctypes.c_byte, data : bytearray):
         super().__init__(base.UnitID, base.FunctionCode)
-        self.ByteCount = ByteCount
-        self.Data = Data
+        self.ByteCount = byte_count
+        self.Data = data
     def __str__(self):
         return f"{super().__str__()},ByteCount:{self.ByteCount},Data:{self.Data}"
 
@@ -51,8 +48,8 @@ Summary how to repack this message from scada sim
 def repackReadResponse(bytes : bytearray):
     base = ModbusBase(int.from_bytes(bytes[6:7], byteorder="big", signed=False),
                       int.from_bytes(bytes[7:8], byteorder="big", signed=False))
-    readResponse = ModbusReadReasponse(base,int.from_bytes(bytes[8:9],byteorder="big", signed=False),
-                                       int.from_bytes(bytes[9:],byteorder="big",signed=False))
+    readResponse = ModbusReadReasponse(base, int.from_bytes(bytes[8:9], byteorder="big", signed=False),
+                                       int.from_bytes(bytes[9:], byteorder="big", signed=False))
     readResponse.setTransactionID(int.from_bytes(bytes[0:2],byteorder="big",signed=False))
     readResponse.setLength(int.from_bytes(bytes[4:6],byteorder="big",signed=False)) # treba da se setuje ne znamo duzinu odgovora [data] == n bytes
     return readResponse
