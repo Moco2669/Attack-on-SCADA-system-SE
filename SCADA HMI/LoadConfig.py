@@ -1,4 +1,6 @@
 from Modbus.Signal import *
+
+
 def load_cfg(file_name):
     with open(file_name, 'r') as file:
         file_contents = file.readlines()

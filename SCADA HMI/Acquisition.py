@@ -1,19 +1,8 @@
-import socket
 import time as t
-import numpy as np
-from Modbus.ReadResponse import *
-from DataBase import *
-from Modbus.ModbusBase import *
-from Modbus.ReadRequest import *
-from Modbus.Signal import *
-from Modbus.WriteRequest import *
-from Modbus.WriteResponse import *
 from SendReadRequest import *
 from Modbus.ReadResponse import *
-import threading
 from AutomationManager import *
 import Connection
-import pandas as pd
 from mlModel import *
 controlRodsList = list()
 waterThermometerList = list()
@@ -24,76 +13,83 @@ systemStateCounter = 0
 systemStatePrevious = list()
 
 
+class Executor:
+    def __init__(self, database):
+        self.database = database
+
+    def AcquisitionAndAutomation(self):
+        global controlRodsList
+        global waterThermometerList
+        global counter
+        global predictionList
+        global systemStateCounter
+        global systemStatePrevious
+        while Connection.ConnectionHandler.isRunning:
+            pack_request = read_requests_from(self.database.base_info, self.database.registers_list)
+            for message in pack_request:
+                if Connection.ConnectionHandler.isConnected and Connection.ConnectionHandler.isRunning:
+                    with Connection.ConnectionHandler.connection_lock:
+                        try:
+                            Connection.ConnectionHandler.client.send(message)
+                            response = Connection.ConnectionHandler.client.recv(1024)
+                        except:
+                            Connection.ConnectionHandler.isConnected = False
+                            if not Connection.ConnectionHandler.isRunning:
+                                break
+                            Connection.ConnectionHandler.lostConnection.notify_all()
+                            if not Connection.ConnectionHandler.isRunning:
+                                break
+                            Connection.ConnectionHandler.connected.wait()
+                            continue
+                    address = find_address(message)
+                    functionCode = find_function_code(message)
+                    op = eOperation(response, functionCode)
+                    if op == False:
+                        modbusresponse = repackReadResponse(response)
+                        self.database.registers[address].current_value = modbusresponse.getData()
+            # ovde se pozivao log
+            # dataForCSV(registers)
+
+            takeValuesForPredict(self.database.registers)
+            if len(predictionList) == 6:
+                pred = xgboostModel.predict(np.array(predictionList).reshape(1, 6))
+                systemStatePrevious.append(pred)  # dodacu predikciju da proveravam
+                systemStateCounter += 1
+                predictionList.clear()
+            if systemStateCounter == 2 and np.all(systemStatePrevious[0] == systemStatePrevious[1]):
+                if systemStatePrevious[0][0][0] == 1:
+                    StateHolder.state = "REPLAY ATTACK"
+                elif systemStatePrevious[0][0][1] == 1:
+                    StateHolder.state = "COMMAND INJECTION"
+                elif systemStatePrevious[0][0][2] == 1:
+                    StateHolder.state = "NORMAL STATE"
+                else:
+                    StateHolder.state = "FINDING STATE"
+                systemStatePrevious.clear()
+                systemStateCounter = 0
+            elif systemStateCounter == 2 and np.any(systemStatePrevious[0] != systemStatePrevious[1]):
+                systemStatePrevious.clear()
+                systemStateCounter = 0
+            Automation(self.database.registers, self.database.base_info)
+            t.sleep(1)
+        print("Acquisition thread stopped.")
+
+
 class StateHolder(object):
     state = "NORMAL STATE"
 
 
-def findAddres(repackRequest):
-    address = int.from_bytes(repackRequest[8:10], byteorder="big", signed=False)
+def find_address(request):
+    address = int.from_bytes(request[8:10], byteorder="big", signed=False)
     return address
 
-def Acquisition(base_info, signal_info):
-    global controlRodsList
-    global waterThermometerList
-    global counter
-    global predictionList
-    global systemStateCounter
-    global systemStatePrevious
-    while Connection.ConnectionHandler.isRunning:
-        pack_request = packRequest(base_info, signal_info)
-        for message in pack_request:
-            address = findAddres(message)
-            functionCode = int.from_bytes(message[7:8], byteorder="big", signed=False)
-            if Connection.ConnectionHandler.isConnected and Connection.ConnectionHandler.isRunning:
-                with Connection.ConnectionHandler.connection_lock:
-                    try:
-                        Connection.ConnectionHandler.client.send(message)
-                        response = Connection.ConnectionHandler.client.recv(1024)
-                    except:
-                        Connection.ConnectionHandler.isConnected = False
-                        if not Connection.ConnectionHandler.isRunning:
-                            break
-                        Connection.ConnectionHandler.lostConnection.notify_all()
-                        if not Connection.ConnectionHandler.isRunning:
-                            break
-                        Connection.ConnectionHandler.connected.wait()
-                        continue
-                op = eOperation(response, functionCode)
-                if op == False:
-                    modbusresponse = repackReadResponse(response)
-                    signal_info[address].current_value = modbusresponse.getData()
-        #ovde se pozivao log
-        #dataForCSV(registers)
+def find_function_code(message):
+    return int.from_bytes(message[7:8], byteorder="big", signed=False)
 
-        takeValuesForPredict(signal_info)
-        if len(predictionList) == 6:
-            pred = xgboostModel.predict(np.array(predictionList).reshape(1, 6))
-            systemStatePrevious.append(pred) # dodacu predikciju da proveravam
-            systemStateCounter += 1
-            predictionList.clear()
-        if systemStateCounter == 2 and np.all(systemStatePrevious[0] == systemStatePrevious[1]):
-            if systemStatePrevious[0][0][0] == 1:
-                StateHolder.state = "REPLAY ATTACK"
-            elif systemStatePrevious[0][0][1] == 1:
-                StateHolder.state = "COMMAND INJECTION"
-            elif systemStatePrevious[0][0][2] == 1:
-                StateHolder.state = "NORMAL STATE"
-            else:
-                StateHolder.state = "FINDING STATE"
-            systemStatePrevious.clear()
-            systemStateCounter = 0
-        elif systemStateCounter == 2 and np.any(systemStatePrevious[0] != systemStatePrevious[1]):
-            systemStatePrevious.clear()
-            systemStateCounter = 0
-        Automation(signal_info, base_info)
-        t.sleep(1)
-    print("Acquisition thread stopped.")
 
 """
 Uzima poslednje 3 vrednosti za prediktovanje 
 """
-
-
 def takeValuesForPredict(signal_info:dict):
     global counter
     global controlRodsList

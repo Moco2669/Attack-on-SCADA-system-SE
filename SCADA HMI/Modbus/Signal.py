@@ -30,14 +30,6 @@ class Signal:
         self._Name = value
 
     @property
-    def reg_type(self):
-        return self._Reg_type
-
-    @reg_type.setter
-    def reg_type(self, value):
-        self._Reg_type = value
-
-    @property
     def num_reg(self):
         return self._Num_reg
 
@@ -57,17 +49,9 @@ class Signal:
     def min_value(self):
         return self._MinValue
 
-    @min_value.setter
-    def min_value(self, value):
-        self._MinValue = value
-
     @property
     def max_value(self):
         return self._MaxValue
-
-    @max_value.setter
-    def max_value(self, value):
-        self._MaxValue = value
 
     @property
     def start_value(self):
@@ -83,16 +67,29 @@ class Signal:
 
     @property
     def signal_type_string(self):
-        if self._SignalType == "DO":
+        if self.signal_type == "DO":
             return "Digital Output"
-        elif self._SignalType == "DI":
+        elif self.signal_type == "DI":
             return "Digital Input"
-        elif self._SignalType == "AO":
+        elif self.signal_type == "AO":
             return "Analog Output"
-        elif self._SignalType == "AI":
+        elif self.signal_type == "AI":
             return "Analog Input"
         else:
             return "Unknown Signal Type"
+
+    @property
+    def read_function_code(self):
+        if self.signal_type == "DO":
+            return 1
+        elif self.signal_type == "DI":
+            return 2
+        elif self.signal_type == "AO":
+            return 3
+        elif self.signal_type == "AI":
+            return 4
+        else:
+            return -1
 
     @signal_type.setter
     def signal_type(self, value):
@@ -120,16 +117,16 @@ class Signal:
 
     @current_value.setter
     def current_value(self, value) -> None:
-        if value < self._MinValue:
-            self.CurrentValue = self._MinValue
-        elif value > self._MaxValue:
-            self.CurrentValue = self._MaxValue
+        if value < self.min_value:
+            self.CurrentValue = self.min_value
+        elif value > self.max_value:
+            self.CurrentValue = self.max_value
         else:
             self.CurrentValue = value
-        if self._MinAlarm != "NO ALARM" and self._MaxAlarm != "NO ALARM":
-            if self.CurrentValue <= self._MinAlarm:
+        if self.min_alarm != "NO ALARM" and self.max_alarm != "NO ALARM":
+            if self.CurrentValue <= self.min_alarm:
                 self.alarm = "LOW ALARM"
-            elif self.CurrentValue >= self._MaxAlarm:
+            elif self.CurrentValue >= self.max_alarm:
                 self.alarm = "HIGH ALARM"
             else:
                 self.alarm = "NO ALARM"

@@ -1,31 +1,39 @@
 from GUI.TableRow import TableRow
 from LoadConfig import *
-from Modbus.Signal import *
 """
 STA - adresa stanice -1 do 254 -> adresa scada sistema
 Broj porta -> >1024 na kom je podignut(server/simulator)
 DBC -> delay izmedju komandi
 """
-base_info = {}
 "Ovde se cuvaju informacije o signalima "
-registers = {}
-base_info, registers = load_cfg('cfg.txt')
 """
 "Name", "Type", "Address", "Value", "Alarm"
 """
 
 
-def get_rows_for_print(signal_info):
-    row_list = list()
-    for key, signal in signal_info.items():
-        row_list.append(TableRow(signal))
-    return row_list
-
-
 class DataBase:
     def __init__(self):
-        self.base_info = None
-        self.registers = None
+        self._base_info = None
+        self._registers = None
+        self.load_data('cfg.txt')
+
+    @property
+    def base_info(self):
+        return self._base_info
+
+    @property
+    def registers(self):
+        return self._registers
+
+    @property
+    def registers_list(self):
+        return self._registers.values()
 
     def load_data(self, file_name):
-        self.base_info, self.signal_info = load_cfg(file_name)
+        self._base_info, self._registers = load_cfg(file_name)
+
+    def get_rows_for_print(self) -> list[TableRow]:
+        row_list = list()
+        for key, signal in self.registers.items():
+            row_list.append(TableRow(signal))
+        return row_list

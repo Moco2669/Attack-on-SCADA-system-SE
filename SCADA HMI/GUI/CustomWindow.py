@@ -11,8 +11,9 @@ from GUI.UpdateTimer import UpdateTimer
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, database):
         super().__init__()
+        self.database = database
         self.table = RegisterTable()
         self.connectionStatusLabel = ConnectionLabel()
         self.attackDetectionLabel = DetectionLabel()
@@ -56,7 +57,7 @@ class MainWindow(QMainWindow):
         self.update_table()
 
     def update_table(self):
-        data = get_rows_for_print(registers)
+        data = self.database.get_rows_for_print()
         self.table.set_data(data)
 
     def update_status_bar(self):
@@ -80,32 +81,3 @@ class MainWindow(QMainWindow):
         self.updateTimer.stop()
         self.close()
         event.accept()
-
-
-def main():
-    Connection.ConnectionHandler.isRunning = True
-    app = QApplication(sys.argv)
-    ex = MainWindow()
-    acquisition_thread = threading.Thread(target=Acquisition, args=(base_info, registers))
-    acquisition_thread.daemon = True  # koristi se za niti koje rade u pozadini
-    acquisition_thread.start()
-    connect_thr = threading.Thread(target=Connection.connect_thread, args=(base_info, 1))
-    connect_thr.daemon = True
-    connect_thr.start()
-    # acquisition_thread.join()
-    # connect_thr.join()
-    sys.exit(app.exec_())
-
-def main2():
-    Connection.ConnectionHandler.isRunning = True
-    acquisition_thread = threading.Thread(target=Acquisition, args=(base_info, registers))
-    acquisition_thread.daemon = True
-    acquisition_thread.start()
-    connect_thr = threading.Thread(target=Connection.connect_thread, args=(base_info, 1))
-    connect_thr.daemon = True
-    connect_thr.start()
-    input("Press Enter to exit...")
-    Connection.ConnectionHandler.client.close()
-    Connection.ConnectionHandler.isRunning = False
-    acquisition_thread.join()
-    connect_thr.join()

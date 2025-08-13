@@ -1,29 +1,14 @@
-import socket
 from Modbus.ReadResponse import *
-from DataBase import *
-from Modbus.ModbusBase import *
 from Modbus.ReadRequest import *
 from Modbus.Signal import *
-import time
 
 
-def packRequest(base_info, signal_info):
-    unitID = base_info["station_address"]
-    signals_in_list = list(signal_info.values())
+def read_requests_from(base_info, registers : list[Signal]):
+    unit_id = base_info["station_address"]
     list_of_request = list()
-    for i in range(0, len(signals_in_list)):
-        function_code = -1
-        match signals_in_list[i].signal_type:
-            case "DO":
-                function_code = 1
-            case "DI":
-                function_code = 2
-            case "AO":
-                function_code = 3
-            case "AI":
-                function_code = 4
-        base = ModbusBase(unitID, function_code)
-        request = ModbusReadRequest(base, signals_in_list[i].start_address, signals_in_list[i].num_reg)
+    for register in registers:
+        base = ModbusBase(unit_id, register.read_function_code)
+        request = ModbusReadRequest(base, register.start_address, register.num_reg)
         list_of_request.append(repack(request))
 
     return list_of_request
