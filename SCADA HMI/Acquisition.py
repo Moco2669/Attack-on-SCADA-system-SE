@@ -9,7 +9,7 @@ class Executor:
     def __init__(self, database: DataBase):
         self.database = database
 
-    def AcquisitionAndAutomation(self):
+    def acquisition_and_automation(self):
         while Connection.ConnectionHandler.isRunning:
             pack_request = read_requests_from(self.database.base_info, self.database.registers_list)
             for message in pack_request:
@@ -28,11 +28,11 @@ class Executor:
                             Connection.ConnectionHandler.connected.wait()
                             continue
                     address = find_address(message)
-                    functionCode = find_function_code(message)
-                    op = eOperation(response, functionCode)
+                    function_code = find_function_code(message)
+                    op = eOperation(response, function_code)
                     if op == False:
-                        modbusresponse = ModbusReadResponse.from_bytes(response)
-                        self.database.registers[address].current_value = modbusresponse.get_data()
+                        modbus_response = ModbusReadResponse.from_bytes(response)
+                        self.database.registers[address].current_value = modbus_response.get_data()
             # ovde se pozivao log
             # dataForCSV(registers)
             Automation(self.database.registers, self.database.base_info)

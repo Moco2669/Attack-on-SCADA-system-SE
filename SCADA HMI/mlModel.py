@@ -1,10 +1,7 @@
 import time
 import pandas as pd
-import sklearn.model_selection
 import xgboost as xgb
 import numpy as np
-import sklearn as skl
-from xgboost import XGBClassifier
 import Connection
 from Acquisition import StateHolder
 from DataBase import DataBase

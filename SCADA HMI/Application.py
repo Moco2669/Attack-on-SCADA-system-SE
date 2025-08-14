@@ -33,7 +33,7 @@ class Application:
         Connection.ConnectionHandler.isRunning = True
         self.security_thread = threading.Thread(target=self.security_model.run)
         self.security_thread.start()
-        self.acquisition_thread = threading.Thread(target=self.executor.AcquisitionAndAutomation)
+        self.acquisition_thread = threading.Thread(target=self.executor.acquisition_and_automation)
         self.acquisition_thread.start()
         self.connection_thread = threading.Thread(target=Connection.connect_thread, args=(self.database.base_info, 1))
         self.connection_thread.start()
