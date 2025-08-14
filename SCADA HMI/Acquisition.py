@@ -45,8 +45,8 @@ class Executor:
                     functionCode = find_function_code(message)
                     op = eOperation(response, functionCode)
                     if op == False:
-                        modbusresponse = repackReadResponse(response)
-                        self.database.registers[address].current_value = modbusresponse.getData()
+                        modbusresponse = ModbusReadResponse.from_bytes(response)
+                        self.database.registers[address].current_value = modbusresponse.get_data()
             # ovde se pozivao log
             # dataForCSV(registers)
 

@@ -6,16 +6,45 @@ import ctypes
 Objekat koji ce primati read odgovore 
 """
 
-class ModbusReadReasponse(ModbusBase):
-    def __init__(self, base : ModbusBase, byte_count : ctypes.c_byte, data : bytearray):
-        super().__init__(base.UnitID, base.FunctionCode)
+class ModbusReadResponse(ModbusBase):
+    def __init__(self, unit_id, function_code, byte_count : ctypes.c_byte, data : bytearray):
+        super().__init__(unit_id, function_code)
         self.ByteCount = byte_count
         self.Data = data
+
+    @classmethod
+    def from_bytes(cls, bytes_array: bytearray):
+        """super().__init__(int.from_bytes(bytes_array[6:7], byteorder="big", signed=False), int.from_bytes(bytes_array[7:8], byteorder="big", signed=False))
+        cls.ByteCount = int.from_bytes(bytes_array[8:9], byteorder="big", signed=False)
+        cls.Data = int.from_bytes(bytes_array[9:], byteorder="big", signed=False)
+        cls.TransactionID = int.from_bytes(bytes_array[0:2], byteorder="big", signed=False)
+        cls.Length = int.from_bytes(bytes_array[4:6], byteorder="big", signed=False)"""
+        transaction_id = int.from_bytes(bytes_array[0:2], byteorder="big", signed=False)
+        length = int.from_bytes(bytes_array[4:6], byteorder="big", signed=False)
+        unit_id = int.from_bytes(bytes_array[6:7], byteorder="big", signed=False)
+        function_code = int.from_bytes(bytes_array[7:8], byteorder="big", signed=False)
+        byte_count = int.from_bytes(bytes_array[8:9], byteorder="big", signed=False)
+        data = int.from_bytes(bytes_array[9:], byteorder="big", signed=False)
+
+        instance = cls(
+            unit_id = unit_id,
+            function_code = function_code,
+            byte_count = byte_count,
+            data = data
+        )
+
+        instance.TransactionID = transaction_id
+        instance.Length = length
+
+        return instance
+
+
     def __str__(self):
         return f"{super().__str__()},ByteCount:{self.ByteCount},Data:{self.Data}"
 
-    def getData(self):
+    def get_data(self):
         return self.Data
+
     def setTransactionID(self, value):
         self.TransactionID = value
 
@@ -45,11 +74,3 @@ Summary how to repack this message from scada sim
 6. byte byteCount 
 7. n-bytes data  
 """
-def repackReadResponse(bytes : bytearray):
-    base = ModbusBase(int.from_bytes(bytes[6:7], byteorder="big", signed=False),
-                      int.from_bytes(bytes[7:8], byteorder="big", signed=False))
-    readResponse = ModbusReadReasponse(base, int.from_bytes(bytes[8:9], byteorder="big", signed=False),
-                                       int.from_bytes(bytes[9:], byteorder="big", signed=False))
-    readResponse.setTransactionID(int.from_bytes(bytes[0:2],byteorder="big",signed=False))
-    readResponse.setLength(int.from_bytes(bytes[4:6],byteorder="big",signed=False)) # treba da se setuje ne znamo duzinu odgovora [data] == n bytes
-    return readResponse

@@ -1,5 +1,6 @@
 import ctypes
 import socket
+from abc import ABC
 
 """
 Svaka klasa u okviru protokola sadrzi ovaj deo.
@@ -18,32 +19,10 @@ functionCode - >Procitaj digitalni izlaz 0x01
                 Length -> unit byte + function code + remaining data 
 """
 
-class ModbusBase:
+class ModbusBase(ABC):
     def __init__(self, unit_id: ctypes.c_byte, function_code: ctypes.c_byte):
         self.TransactionID = 0 #ushort
         self.ProtocolID = 0 #ushort
         self.Length = 2 #ushort
         self.UnitID = unit_id
         self.FunctionCode = function_code
-
-    def __str__(self):
-        return f"TransactionID:{self.TransactionID},ProtocolID:{self.ProtocolID},Length:{self.Length},UnitID:{self.UnitID},FunctionCode:{self.FunctionCode}"
-
-
-    def setTransactionID(self, value):
-        self.TransactionID = value
-
-
-    def setProtocolID(self, value):
-        self.ProtocolID = value
-
-
-    def setLength(self, value):
-        self.Length = value
-
-
-    def setUnitID(self, value):
-        self.UnitID = value
-
-    def setFunctionCode(self, value):
-        self.FunctionCode = value

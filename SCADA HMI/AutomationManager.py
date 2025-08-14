@@ -52,7 +52,7 @@ def compareWriteRequestAndResponse(writeRequest : ModbusWriteRequest, writeRespo
         writeRequest.Length == writeResponse.Length and
         writeRequest.UnitID == writeResponse.UnitID and
         writeRequest.FunctionCode == writeResponse.FunctionCode and
-        writeRequest.RegisterAdress == writeResponse.RegisterAdress):
+        writeRequest.RegisterAddress == writeResponse.RegisterAddress):
         return True
     else:
         return False
@@ -107,9 +107,9 @@ def eOperation(message, fc):
 
 
 def AutomationLogic(signal_info, base_info, controlRodsAddress, command, functionCode = 5):
-        base = ModbusBase(base_info["station_address"], functionCode)  # 5
-        request = ModbusWriteRequest(base,signal_info[controlRodsAddress].start_address ,signal_info[controlRodsAddress].CurrentValue)
-        modbusWriteRequest = repackWrite(request,command)# if high alarm 0xff00 ,low alarm 0x0000
+        request = ModbusWriteRequest(base_info["station_address"], functionCode, signal_info[controlRodsAddress].start_address,
+                                     command)
+        modbusWriteRequest = request.as_bytes()
         response = None
         with Connection.ConnectionHandler.connection_lock:
             if Connection.ConnectionHandler.isConnected:
@@ -133,9 +133,9 @@ def AutomationLogic(signal_info, base_info, controlRodsAddress, command, functio
         if not response: return
         op = eOperation(response,functionCode)
         if op == False:
-            modbusWriteResponse = repackResponse(response)
+            modbusWriteResponse = ModbusWriteResponse.from_bytes(response)
             if (compareWriteRequestAndResponse(request, modbusWriteResponse)):
-                signal_info[controlRodsAddress].current_value(command)
+                signal_info[controlRodsAddress].current_value=command
 
 
 """

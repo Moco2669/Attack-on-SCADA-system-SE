@@ -116,7 +116,7 @@ class Signal:
         return self.CurrentValue
 
     @current_value.setter
-    def current_value(self, value) -> None:
+    def current_value(self, value: int) -> None:
         if value < self.min_value:
             self.CurrentValue = self.min_value
         elif value > self.max_value:
