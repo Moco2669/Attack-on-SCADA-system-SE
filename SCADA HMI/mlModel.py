@@ -3,7 +3,6 @@ import pandas as pd
 import xgboost as xgb
 import numpy as np
 import Connection
-from Acquisition import StateHolder
 from DataBase import DataBase
 
 pdDf = pd.read_csv('learningDataNew.csv')
@@ -31,13 +30,13 @@ class MachineLearningModel:
                 self.predictionList.clear()
             if self.systemStateCounter == 2 and np.all(self.systemStatePrevious[0] == self.systemStatePrevious[1]):
                 if self.systemStatePrevious[0][0][0] == 1:
-                    StateHolder.state = "REPLAY ATTACK"
+                    self.database.system_state = "REPLAY ATTACK"
                 elif self.systemStatePrevious[0][0][1] == 1:
-                    StateHolder.state = "COMMAND INJECTION"
+                    self.database.system_state = "COMMAND INJECTION"
                 elif self.systemStatePrevious[0][0][2] == 1:
-                    StateHolder.state = "NORMAL STATE"
+                    self.database.system_state = "NORMAL STATE"
                 else:
-                    StateHolder.state = "FINDING STATE"
+                    self.database.system_state = "FINDING STATE"
                 self.systemStatePrevious.clear()
                 self.systemStateCounter = 0
             elif self.systemStateCounter == 2 and np.any(self.systemStatePrevious[0] != self.systemStatePrevious[1]):

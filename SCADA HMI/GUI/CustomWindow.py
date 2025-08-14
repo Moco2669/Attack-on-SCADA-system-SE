@@ -63,10 +63,10 @@ class MainWindow(QMainWindow):
             self.connectionStatusLabel.connected()
         else:
             self.connectionStatusLabel.disconnected()
-        if StateHolder.state in ("COMMAND INJECTION", "REPLAY ATTACK"):
-            self.attackDetectionLabel.abnormal_state(StateHolder.state)
+        if self.database.system_state in ("COMMAND INJECTION", "REPLAY ATTACK"):
+            self.attackDetectionLabel.abnormal_state(self.database.system_state)
         else:
-            self.attackDetectionLabel.normal_state(StateHolder.state)
+            self.attackDetectionLabel.normal_state(self.database.system_state)
 
     def closeEvent(self, event):
         Connection.ConnectionHandler.client.close()

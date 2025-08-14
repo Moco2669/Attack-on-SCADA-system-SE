@@ -40,10 +40,6 @@ class Executor:
         print("Acquisition thread stopped.")
 
 
-class StateHolder(object):
-    state = "NORMAL STATE"
-
-
 def find_address(request):
     address = int.from_bytes(request[8:10], byteorder="big", signed=False)
     return address

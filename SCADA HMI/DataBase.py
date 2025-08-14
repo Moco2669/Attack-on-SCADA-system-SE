@@ -15,7 +15,16 @@ class DataBase:
     def __init__(self):
         self._base_info = None
         self._registers = None
+        self._system_state = "NORMAL STATE"
         self.load_data('cfg.txt')
+
+    @property
+    def system_state(self):
+        return self._system_state
+
+    @system_state.setter
+    def system_state(self, value: str):
+        self._system_state = value
 
     @property
     def base_info(self):

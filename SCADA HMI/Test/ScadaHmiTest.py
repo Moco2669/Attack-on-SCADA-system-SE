@@ -3,7 +3,6 @@ from PyQt5.QtTest import QTest
 import ModbusMockServer
 import Connection
 from Application import Application
-from Acquisition import StateHolder
 
 
 class TestNormalTemperature(unittest.TestCase):
@@ -135,7 +134,6 @@ class TestMLNormalState(unittest.TestCase):
         cls.mock_server = ModbusMockServer.NormalState()
 
     def setUp(self):
-        StateHolder.state = "NORMAL STATE"
         self.app = Application()
         self.mock_server.start()
 
