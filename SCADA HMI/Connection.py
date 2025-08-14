@@ -42,8 +42,3 @@ def connect_thread(base_info, foo):
                     ConnectionHandler.isConnected = False
                     time.sleep(0.5)
     print("Connection thread stopped.")
-
-
-def disconnect(client):
-    client.close()
-    return True
