@@ -131,6 +131,7 @@ class TestMLNormalState(unittest.TestCase):
     def setUpClass(cls):
         cls.state_report = "NORMAL STATE"
         cls.threshold = 7
+        cls.number_of_attempts = 17
         cls.mock_server = ModbusMockServer.NormalState()
 
     def setUp(self):
@@ -145,7 +146,7 @@ class TestMLNormalState(unittest.TestCase):
     def test_state_report(self):
         desired_state_counter = 0
         QTest.qWait(1000)
-        for _ in range(17):
+        for _ in range(self.number_of_attempts):
             state_label = self.app.main_window.attackDetectionLabel.text()
             if self.state_report in state_label:
                 desired_state_counter += 1
@@ -157,13 +158,15 @@ class TestMLCommandInjection(TestMLNormalState):
     def setUpClass(cls):
         cls.state_report = "COMMAND INJECTION"
         cls.threshold = 2
+        cls.number_of_attempts = 17
         cls.mock_server = ModbusMockServer.CommandInjection()
 
 class TestMLReplayAttack(TestMLNormalState):
     @classmethod
     def setUpClass(cls):
         cls.state_report = "REPLAY ATTACK"
-        cls.threshold = 2
+        cls.threshold = 5
+        cls.number_of_attempts = 30
         cls.mock_server = ModbusMockServer.ReplayAttack()
 
 if __name__ == '__main__':
