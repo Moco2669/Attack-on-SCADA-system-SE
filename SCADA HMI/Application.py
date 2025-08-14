@@ -6,6 +6,7 @@ import Connection
 from Acquisition import Executor
 from DataBase import DataBase
 from GUI import CustomWindow
+from mlModel import MachineLearningModel
 
 
 class Application:
@@ -13,20 +14,25 @@ class Application:
         self.q_app = None
         self.database = None
         self.executor = None
+        self.security_model = None
         self.main_window = None
         self.acquisition_thread = None
         self.connection_thread = None
+        self.security_thread = None
         self.run()
 
     def run(self):
         self.database = DataBase()
         self.executor = Executor(self.database)
+        self.security_model = MachineLearningModel(self.database)
         self.q_app = QApplication.instance()
         if self.q_app is None:
             self.q_app = QApplication(sys.argv)
         self.main_window = CustomWindow.MainWindow(self.database)
         Connection.ConnectionHandler.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
         Connection.ConnectionHandler.isRunning = True
+        self.security_thread = threading.Thread(target=self.security_model.run)
+        self.security_thread.start()
         self.acquisition_thread = threading.Thread(target=self.executor.AcquisitionAndAutomation)
         self.acquisition_thread.start()
         self.connection_thread = threading.Thread(target=Connection.connect_thread, args=(self.database.base_info, 1))
@@ -40,6 +46,7 @@ class Application:
         with Connection.ConnectionHandler.connection_lock:
             Connection.ConnectionHandler.lostConnection.notify_all()
             Connection.ConnectionHandler.connected.notify_all()
+        self.security_thread.join()
         self.acquisition_thread.join()
         self.connection_thread.join()
         try:

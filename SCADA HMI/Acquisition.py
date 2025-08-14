@@ -3,27 +3,13 @@ from SendReadRequest import *
 from Modbus.ReadResponse import *
 from AutomationManager import *
 import Connection
-from mlModel import *
-controlRodsList = list()
-waterThermometerList = list()
-predictionList = list()
-counter = 0
-xgboostModel = loadModel()
-systemStateCounter = 0
-systemStatePrevious = list()
 
 
 class Executor:
-    def __init__(self, database):
+    def __init__(self, database: DataBase):
         self.database = database
 
     def AcquisitionAndAutomation(self):
-        global controlRodsList
-        global waterThermometerList
-        global counter
-        global predictionList
-        global systemStateCounter
-        global systemStatePrevious
         while Connection.ConnectionHandler.isRunning:
             pack_request = read_requests_from(self.database.base_info, self.database.registers_list)
             for message in pack_request:
@@ -49,27 +35,6 @@ class Executor:
                         self.database.registers[address].current_value = modbusresponse.get_data()
             # ovde se pozivao log
             # dataForCSV(registers)
-
-            takeValuesForPredict(self.database.registers)
-            if len(predictionList) == 6:
-                pred = xgboostModel.predict(np.array(predictionList).reshape(1, 6))
-                systemStatePrevious.append(pred)  # dodacu predikciju da proveravam
-                systemStateCounter += 1
-                predictionList.clear()
-            if systemStateCounter == 2 and np.all(systemStatePrevious[0] == systemStatePrevious[1]):
-                if systemStatePrevious[0][0][0] == 1:
-                    StateHolder.state = "REPLAY ATTACK"
-                elif systemStatePrevious[0][0][1] == 1:
-                    StateHolder.state = "COMMAND INJECTION"
-                elif systemStatePrevious[0][0][2] == 1:
-                    StateHolder.state = "NORMAL STATE"
-                else:
-                    StateHolder.state = "FINDING STATE"
-                systemStatePrevious.clear()
-                systemStateCounter = 0
-            elif systemStateCounter == 2 and np.any(systemStatePrevious[0] != systemStatePrevious[1]):
-                systemStatePrevious.clear()
-                systemStateCounter = 0
             Automation(self.database.registers, self.database.base_info)
             t.sleep(1)
         print("Acquisition thread stopped.")
@@ -85,32 +50,6 @@ def find_address(request):
 
 def find_function_code(message):
     return int.from_bytes(message[7:8], byteorder="big", signed=False)
-
-
-"""
-Uzima poslednje 3 vrednosti za prediktovanje 
-"""
-def takeValuesForPredict(signal_info:dict):
-    global counter
-    global controlRodsList
-    global waterThermometerList
-    global predictionList
-    if counter != 3:
-        for key,value in signal_info.items():
-            match signal_info[key].signal_type:
-                case "DO":
-                    controlRodsList.append(signal_info[key].current_value)
-                case "AI":
-                    waterThermometerList.append(signal_info[key].current_value)
-        counter+=1
-    else:
-        counter = 0
-        predictionList.extend(waterThermometerList)
-        predictionList.extend(controlRodsList)
-        waterThermometerList.clear()
-        controlRodsList.clear()
-
-
 
 """
 Korisceno kako bi se skupljali podaci za treniranje 
