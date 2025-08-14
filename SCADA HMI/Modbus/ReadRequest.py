@@ -12,13 +12,13 @@ Primer: start adress 1000
 
 
 class ModbusReadRequest(ModbusBase):
-    value = 0
+    counter = 0
     def __init__(self, unit_id, function_code, start_address: ctypes.c_ushort, quantity: ctypes.c_ushort):
         super().__init__(unit_id, function_code)
-        ModbusReadRequest.value += 1
-        self.TransactionID = ModbusReadRequest.value
-        if ModbusReadRequest.value == 65535:
-            ModbusReadRequest.value = 0
+        ModbusReadRequest.counter += 1
+        self.TransactionID = ModbusReadRequest.counter
+        if ModbusReadRequest.counter == 65535:
+            ModbusReadRequest.counter = 0
         self.Length += 4 # Start address and quantity is always 4 bytes
         self.StartAddress = start_address
         self.Quantity = quantity

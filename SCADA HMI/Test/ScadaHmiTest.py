@@ -28,7 +28,7 @@ class TestNormalTemperature(unittest.TestCase):
                                     self.control_rods,
                                     self.check_temperature,
                                     self.check_control_rods)
-        self.assertTrue(result, f"Alarms are not {self.temperature} and {self.control_rods}")
+        self.assertTrue(result, f"Displayed values are not {self.temperature} and {self.control_rods}")
 
     def test_app_runs_with_mock_server(self):
         QTest.qWait(4000)
