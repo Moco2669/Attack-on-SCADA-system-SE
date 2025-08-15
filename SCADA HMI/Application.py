@@ -1,4 +1,3 @@
-import socket
 import sys
 import threading
 from PyQt5.QtWidgets import QApplication
@@ -30,8 +29,6 @@ class Application:
         if self.q_app is None:
             self.q_app = QApplication(sys.argv)
         self.main_window = CustomWindow.MainWindow(self.database, self.connection_handler)
-        self.security_thread = threading.Thread(target=self.security_model.run)
-        self.security_thread.start()
 
     def stop(self):
         #self.q_app.quit()
@@ -39,14 +36,8 @@ class Application:
         self.database.stop()
         self.connection_handler.stop()
         self.executor.stop()
-        """with Connection.ConnectionHandler.connection_lock:
-            Connection.ConnectionHandler.lostConnection.notify_all()
-            Connection.ConnectionHandler.connected.notify_all()"""
-        self.security_thread.join()
-        """try:
-            Connection.ConnectionHandler.client.close()
-        except Exception as e:
-            pass"""
+        self.security_model.stop()
+
 
 if __name__ == "__main__":
     app = Application()

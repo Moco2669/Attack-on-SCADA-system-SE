@@ -1,4 +1,6 @@
 import time
+from threading import Thread
+
 import pandas as pd
 import xgboost as xgb
 import numpy as np
@@ -12,6 +14,7 @@ class MachineLearningModel:
     def __init__(self, database: DataBase, connection: ConnectionHandler):
         self.database = database
         self.connection = connection
+        self.detection_running = True
         self.controlRodsList = list()
         self.waterThermometerList = list()
         self.predictionList = list()
@@ -20,9 +23,11 @@ class MachineLearningModel:
         self.systemStatePrevious = list()
         self.xgboostModel = xgb.XGBClassifier()
         self.xgboostModel.load_model('xgb.json')
+        self._detection_loop = Thread(target=self.run)
+        self._detection_loop.start()
 
     def run(self):
-        while self.database.app_running:
+        while self.detection_running:
             self.take_values_for_predict(self.database.registers)
             if len(self.predictionList) == 6:
                 pred = self.xgboostModel.predict(np.array(self.predictionList).reshape(1, 6))
@@ -43,10 +48,7 @@ class MachineLearningModel:
             elif self.systemStateCounter == 2 and np.any(self.systemStatePrevious[0] != self.systemStatePrevious[1]):
                 self.systemStatePrevious.clear()
                 self.systemStateCounter = 0
-            if not self.database.app_running:
-                break
             time.sleep(1)
-        print("Security thread stopped.")
 
     """
     Uzima poslednje 3 vrednosti za prediktovanje 
@@ -66,3 +68,8 @@ class MachineLearningModel:
             self.predictionList.extend(self.controlRodsList)
             self.waterThermometerList.clear()
             self.controlRodsList.clear()
+
+    def stop(self):
+        self.detection_running = False
+        self._detection_loop.join()
+        print("Security thread stopped.")
