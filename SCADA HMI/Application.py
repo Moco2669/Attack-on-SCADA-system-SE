@@ -32,8 +32,6 @@ class Application:
         self.main_window = CustomWindow.MainWindow(self.database, self.connection_handler)
         self.security_thread = threading.Thread(target=self.security_model.run)
         self.security_thread.start()
-        self.connection_thread = threading.Thread(target=self.connection_handler.connection_loop)
-        self.connection_thread.start()
 
     def stop(self):
         #self.q_app.quit()
@@ -41,12 +39,10 @@ class Application:
         self.database.stop()
         self.connection_handler.stop()
         self.executor.stop()
-        self.connection_handler.isConnected = False
         """with Connection.ConnectionHandler.connection_lock:
             Connection.ConnectionHandler.lostConnection.notify_all()
             Connection.ConnectionHandler.connected.notify_all()"""
         self.security_thread.join()
-        self.connection_thread.join()
         """try:
             Connection.ConnectionHandler.client.close()
         except Exception as e:

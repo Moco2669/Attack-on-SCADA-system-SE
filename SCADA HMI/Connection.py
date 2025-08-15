@@ -1,5 +1,6 @@
 import socket
 import threading
+from threading import Thread
 import time
 import DataBase
 
@@ -14,12 +15,17 @@ class ConnectionHandler:
         self.connected, self.lostConnection = threading.Condition(self.connection_lock), threading.Condition(self.connection_lock)
         self.running_lock = threading.RLock()
         self.running_notify = threading.Condition(self.running_lock)
+        self._connection_maintainer = Thread(target=self.connection_loop)
+        self._connection_maintainer.start()
 
     def __del__(self):
+        self.connection_running = False
         try:
             self.socket.close()
         except Exception as e:
             print(f"Error closing socket: {e}")
+        self._connection_maintainer.join()
+
 
     def connection_loop(self):
         while self.connection_running:
@@ -58,3 +64,4 @@ class ConnectionHandler:
             self.socket.close()
         except:
             pass
+        self._connection_maintainer.join()
