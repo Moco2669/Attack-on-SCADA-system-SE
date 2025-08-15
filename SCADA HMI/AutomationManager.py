@@ -46,13 +46,13 @@ else nije izvrseno
 """
 
 
-def compareWriteRequestAndResponse(writeRequest : ModbusWriteRequest, writeResponse : ModbusWriteResponse):
-    if (writeRequest.TransactionID == writeResponse.TransactionID and
-        writeRequest.ProtocolID == writeResponse.ProtocolID and
-        writeRequest.Length == writeResponse.Length and
-        writeRequest.UnitID == writeResponse.UnitID and
-        writeRequest.FunctionCode == writeResponse.FunctionCode and
-        writeRequest.RegisterAddress == writeResponse.RegisterAddress):
+def compare(write_request : ModbusWriteRequest, write_response : ModbusWriteResponse):
+    if (write_request.TransactionID == write_response.TransactionID and
+        write_request.ProtocolID == write_response.ProtocolID and
+        write_request.Length == write_response.Length and
+        write_request.UnitID == write_response.UnitID and
+        write_request.FunctionCode == write_response.FunctionCode and
+        write_request.RegisterAddress == write_response.RegisterAddress):
         return True
     else:
         return False
@@ -106,17 +106,16 @@ def eOperation(message, fc):
         return False
 
 
-def AutomationLogic(signal_info, base_info, controlRodsAddress, command, functionCode = 5):
-        request = ModbusWriteRequest(base_info["station_address"], functionCode, signal_info[controlRodsAddress].start_address,
-                                     command)
-        modbusWriteRequest = request.as_bytes()
+def automation_logic(signal_info, base_info, control_rods_address, command, function_code = 5):
+        write_request = ModbusWriteRequest(base_info["station_address"], function_code, signal_info[control_rods_address].start_address,
+                                           command)
         response = None
         with Connection.ConnectionHandler.connection_lock:
             if Connection.ConnectionHandler.isConnected:
                 if not Connection.ConnectionHandler.isRunning:
                     return
                 try:
-                    Connection.ConnectionHandler.client.send(modbusWriteRequest)
+                    Connection.ConnectionHandler.client.send(write_request.as_bytes())
                     response = Connection.ConnectionHandler.client.recv(1024)
                     if not response:
                         return
@@ -131,11 +130,11 @@ def AutomationLogic(signal_info, base_info, controlRodsAddress, command, functio
                     if not response or not Connection.ConnectionHandler.isRunning:
                         return
         if not response: return
-        op = eOperation(response,functionCode)
+        op = eOperation(response, function_code)
         if op == False:
-            modbusWriteResponse = ModbusWriteResponse.from_bytes(response)
-            if (compareWriteRequestAndResponse(request, modbusWriteResponse)):
-                signal_info[controlRodsAddress].current_value=command
+            modbus_write_response = ModbusWriteResponse.from_bytes(response)
+            if compare(write_request, modbus_write_response):
+                signal_info[control_rods_address].current_value=command
 
 
 """
@@ -143,10 +142,10 @@ Vrsi se provera alarma i desava se logika automatizacije
 """
 
 
-def Automation(signal_info, base_info):
-    waterThermometerAddress = 2000  # pravi ovo da cita iz signal info
-    controlRodsAddress = 1000
-    if isHighAlarmActive(waterThermometerAddress,signal_info):
-        AutomationLogic(signal_info, base_info, controlRodsAddress,65280)  # #0xFF00 za 1
-    elif isLowAlarmActive(waterThermometerAddress,signal_info):
-        AutomationLogic(signal_info, base_info, controlRodsAddress,0)
+def automation(signal_info, base_info):
+    water_thermometer_address = 2000  # pravi ovo da cita iz signal info
+    control_rods_address = 1000
+    if isHighAlarmActive(water_thermometer_address, signal_info):
+        automation_logic(signal_info, base_info, control_rods_address, 65280)  # #0xFF00 za 1
+    elif isLowAlarmActive(water_thermometer_address, signal_info):
+        automation_logic(signal_info, base_info, control_rods_address, 0)
