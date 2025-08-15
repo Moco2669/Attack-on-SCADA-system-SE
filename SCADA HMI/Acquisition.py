@@ -1,4 +1,5 @@
 import time
+from threading import Thread
 from SendReadRequest import *
 from Modbus.ReadResponse import *
 from AutomationManager import *
@@ -9,6 +10,8 @@ class Executor:
     def __init__(self, database: DataBase, connection: ConnectionHandler):
         self.connection = connection
         self.database = database
+        self._program_loop = Thread(target=self.acquisition_and_automation)
+        self._program_loop.start()
 
     def acquisition_and_automation(self):
         while self.database.app_running:
@@ -49,3 +52,6 @@ class Executor:
             self.automation_logic(control_rods_address, 65280)  # #0xFF00 za 1
         elif isLowAlarmActive(water_thermometer_address, self.database.registers):
             self.automation_logic(control_rods_address, 0)
+
+    def stop(self):
+        self._program_loop.join()

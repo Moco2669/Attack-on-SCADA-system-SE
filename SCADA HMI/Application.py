@@ -17,7 +17,6 @@ class Application:
         self.connection_handler = None
         self.security_model = None
         self.main_window = None
-        self.acquisition_thread = None
         self.connection_thread = None
         self.security_thread = None
         self.run()
@@ -33,8 +32,6 @@ class Application:
         self.main_window = CustomWindow.MainWindow(self.database, self.connection_handler)
         self.security_thread = threading.Thread(target=self.security_model.run)
         self.security_thread.start()
-        self.acquisition_thread = threading.Thread(target=self.executor.acquisition_and_automation)
-        self.acquisition_thread.start()
         self.connection_thread = threading.Thread(target=self.connection_handler.connection_loop)
         self.connection_thread.start()
 
@@ -42,12 +39,13 @@ class Application:
         #self.q_app.quit()
         self.main_window.close()
         self.database.stop()
+        self.connection_handler.stop()
+        self.executor.stop()
         self.connection_handler.isConnected = False
         """with Connection.ConnectionHandler.connection_lock:
             Connection.ConnectionHandler.lostConnection.notify_all()
             Connection.ConnectionHandler.connected.notify_all()"""
         self.security_thread.join()
-        self.acquisition_thread.join()
         self.connection_thread.join()
         """try:
             Connection.ConnectionHandler.client.close()
