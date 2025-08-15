@@ -2,7 +2,7 @@ import socket
 import sys
 import threading
 from PyQt5.QtWidgets import QApplication
-import Connection
+from Connection import ConnectionHandler
 from Acquisition import Executor
 from DataBase import DataBase
 from GUI import CustomWindow
@@ -14,6 +14,7 @@ class Application:
         self.q_app = None
         self.database = None
         self.executor = None
+        self.connection_handler = None
         self.security_model = None
         self.main_window = None
         self.acquisition_thread = None
@@ -23,36 +24,35 @@ class Application:
 
     def run(self):
         self.database = DataBase()
-        self.executor = Executor(self.database)
-        self.security_model = MachineLearningModel(self.database)
+        self.connection_handler = ConnectionHandler(self.database)
+        self.executor = Executor(self.database, self.connection_handler)
+        self.security_model = MachineLearningModel(self.database, self.connection_handler)
         self.q_app = QApplication.instance()
         if self.q_app is None:
             self.q_app = QApplication(sys.argv)
-        self.main_window = CustomWindow.MainWindow(self.database)
-        Connection.ConnectionHandler.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-        Connection.ConnectionHandler.isRunning = True
+        self.main_window = CustomWindow.MainWindow(self.database, self.connection_handler)
         self.security_thread = threading.Thread(target=self.security_model.run)
         self.security_thread.start()
         self.acquisition_thread = threading.Thread(target=self.executor.acquisition_and_automation)
         self.acquisition_thread.start()
-        self.connection_thread = threading.Thread(target=Connection.connect_thread, args=(self.database.base_info, 1))
+        self.connection_thread = threading.Thread(target=self.connection_handler.connection_loop)
         self.connection_thread.start()
 
     def stop(self):
         #self.q_app.quit()
         self.main_window.close()
-        Connection.ConnectionHandler.isRunning = False
-        Connection.ConnectionHandler.isConnected = False
-        with Connection.ConnectionHandler.connection_lock:
+        self.database.stop()
+        self.connection_handler.isConnected = False
+        """with Connection.ConnectionHandler.connection_lock:
             Connection.ConnectionHandler.lostConnection.notify_all()
-            Connection.ConnectionHandler.connected.notify_all()
+            Connection.ConnectionHandler.connected.notify_all()"""
         self.security_thread.join()
         self.acquisition_thread.join()
         self.connection_thread.join()
-        try:
+        """try:
             Connection.ConnectionHandler.client.close()
         except Exception as e:
-            pass
+            pass"""
 
 if __name__ == "__main__":
     app = Application()

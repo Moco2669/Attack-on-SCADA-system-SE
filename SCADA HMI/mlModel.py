@@ -2,15 +2,16 @@ import time
 import pandas as pd
 import xgboost as xgb
 import numpy as np
-import Connection
+from Connection import ConnectionHandler
 from DataBase import DataBase
 
 pdDf = pd.read_csv('learningDataNew.csv')
 pdDf.head()
 
 class MachineLearningModel:
-    def __init__(self, database: DataBase):
+    def __init__(self, database: DataBase, connection: ConnectionHandler):
         self.database = database
+        self.connection = connection
         self.controlRodsList = list()
         self.waterThermometerList = list()
         self.predictionList = list()
@@ -21,7 +22,7 @@ class MachineLearningModel:
         self.xgboostModel.load_model('xgb.json')
 
     def run(self):
-        while Connection.ConnectionHandler.isRunning:
+        while self.database.app_running:
             self.take_values_for_predict(self.database.registers)
             if len(self.predictionList) == 6:
                 pred = self.xgboostModel.predict(np.array(self.predictionList).reshape(1, 6))
@@ -42,11 +43,8 @@ class MachineLearningModel:
             elif self.systemStateCounter == 2 and np.any(self.systemStatePrevious[0] != self.systemStatePrevious[1]):
                 self.systemStatePrevious.clear()
                 self.systemStateCounter = 0
-            if not Connection.ConnectionHandler.isConnected:
-                if not Connection.ConnectionHandler.isRunning:
-                    break
-                with Connection.ConnectionHandler.connection_lock:
-                    Connection.ConnectionHandler.connected.wait()
+            if not self.database.app_running:
+                break
             time.sleep(1)
         print("Security thread stopped.")
 

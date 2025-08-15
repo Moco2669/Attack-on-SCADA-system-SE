@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout
 from PyQt5.QtCore import Qt
-from Acquisition import *
-import Connection
+from Connection import ConnectionHandler
 from GUI.ConnectionLabel import ConnectionLabel
 from GUI.DetectionLabel import DetectionLabel
 from GUI.RegisterTable import RegisterTable
@@ -9,9 +8,10 @@ from GUI.UpdateTimer import UpdateTimer
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, database):
+    def __init__(self, database, connection: ConnectionHandler):
         super().__init__()
         self.database = database
+        self.connection = connection
         self.table = RegisterTable()
         self.connectionStatusLabel = ConnectionLabel()
         self.attackDetectionLabel = DetectionLabel()
@@ -59,7 +59,7 @@ class MainWindow(QMainWindow):
         self.table.set_data(data)
 
     def update_status_bar(self):
-        if Connection.ConnectionHandler.isConnected:
+        if self.connection.isConnected:
             self.connectionStatusLabel.connected()
         else:
             self.connectionStatusLabel.disconnected()
@@ -69,12 +69,8 @@ class MainWindow(QMainWindow):
             self.attackDetectionLabel.normal_state(self.database.system_state)
 
     def closeEvent(self, event):
-        Connection.ConnectionHandler.client.close()
-        Connection.ConnectionHandler.isRunning = False
-        Connection.ConnectionHandler.isConnected = False
-        with Connection.ConnectionHandler.connection_lock:
-            Connection.ConnectionHandler.lostConnection.notify_all()
-            Connection.ConnectionHandler.connected.notify_all()
+        self.connection.stop()
+        self.database.stop()
         self.updateTimer.timeout.disconnect(self.update_gui)
         self.updateTimer.stop()
         self.close()

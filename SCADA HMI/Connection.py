@@ -1,44 +1,60 @@
 import socket
 import threading
 import time
+import DataBase
 
 
 class ConnectionHandler:
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-    isConnected = False
-    connection_lock = threading.RLock()
-    connected, lostConnection = threading.Condition(connection_lock), threading.Condition(connection_lock)
-    isRunning = True
-    running_lock = threading.RLock()
-    running_notify = threading.Condition(running_lock)
-    """def connect(client,base_info):
-    try:
-        client.connect(('127.0.0.1', int(base_info["num_port"])))
-        isConnected = True
-        return isConnected
-    except ConnectionRefusedError:
-        print("Could not connect to the server. Server may not be running or address/port is incorrect.")
-        isConnected = False
-        return isConnected
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        isConnected = False
-        return isConnected"""
+    def __init__(self, database: DataBase):
+        self.database = database
+        self.socket = None
+        self.connection_running = True
+        self.isConnected = False
+        self.connection_lock = threading.RLock()
+        self.connected, self.lostConnection = threading.Condition(self.connection_lock), threading.Condition(self.connection_lock)
+        self.running_lock = threading.RLock()
+        self.running_notify = threading.Condition(self.running_lock)
 
+    def __del__(self):
+        try:
+            self.socket.close()
+        except Exception as e:
+            print(f"Error closing socket: {e}")
 
-def connect_thread(base_info, foo):
-    while ConnectionHandler.isRunning:
-        if ConnectionHandler.isConnected == False:
-            with ConnectionHandler.connection_lock:
-                try:
-                    ConnectionHandler.client.connect(('127.0.0.1', int(base_info["num_port"])))
-                    ConnectionHandler.isConnected = True
-                    ConnectionHandler.connected.notify_all()
-                    ConnectionHandler.lostConnection.wait()
-                    ConnectionHandler.client.close()
-                    ConnectionHandler.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-                except Exception as e:
-                    # print(f"An error occurred: {e}")
-                    ConnectionHandler.isConnected = False
-                    time.sleep(0.5)
-    print("Connection thread stopped.")
+    def connection_loop(self):
+        while self.connection_running:
+            if not self.isConnected:
+                with self.connection_lock:
+                    try:
+                        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+                        self.socket.connect(('127.0.0.1', int(self.database.base_info["num_port"])))
+                        self.isConnected = True
+                        self.connected.notify_all()
+                        self.lostConnection.wait()
+                        self.isConnected = False
+                    except Exception as e:
+                        print(f"Connection error: {e}")
+                        self.isConnected = False
+                        time.sleep(0.5)
+
+    def request(self, request):
+        response = None
+        with self.connection_lock:
+            try:
+                self.socket.send(request)
+                response = self.socket.recv(1024)
+            except:
+                self.isConnected = False
+                self.lostConnection.notify_all()
+        return response
+
+    def stop(self):
+        self.connection_running = False
+        self.isConnected = False
+        with self.connection_lock:
+            self.lostConnection.notify_all()
+            self.connected.notify_all()
+        try:
+            self.socket.close()
+        except:
+            pass

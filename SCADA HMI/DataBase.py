@@ -13,6 +13,7 @@ DBC -> delay izmedju komandi
 
 class DataBase:
     def __init__(self):
+        self._app_running = True
         self._base_info = None
         self._registers = None
         self._system_state = "NORMAL STATE"
@@ -21,6 +22,10 @@ class DataBase:
     @property
     def system_state(self):
         return self._system_state
+
+    @property
+    def app_running(self):
+        return self._app_running
 
     @system_state.setter
     def system_state(self, value: str):
@@ -40,6 +45,9 @@ class DataBase:
 
     def load_data(self, file_name):
         self._base_info, self._registers = load_cfg(file_name)
+
+    def stop(self):
+        self._app_running = False
 
     def get_rows_for_print(self) -> list[TableRow]:
         row_list = list()

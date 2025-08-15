@@ -54,14 +54,6 @@ class Signal:
         return self._MaxValue
 
     @property
-    def start_value(self):
-        return self._StartValue
-
-    @start_value.setter
-    def start_value(self, value):
-        self._StartValue = value
-
-    @property
     def signal_type(self):
         return self._SignalType
 
