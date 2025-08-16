@@ -20,6 +20,10 @@ class ConnectionHandler:
 
     def __del__(self):
         self.connection_running = False
+        self.isConnected = False
+        with self.connection_lock:
+            self.lostConnection.notify_all()
+            self.connected.notify_all()
         try:
             self.socket.close()
         except Exception as e:

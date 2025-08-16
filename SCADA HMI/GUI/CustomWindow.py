@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout
 from PyQt5.QtCore import Qt
+from DataBase import DataBase
 from Connection import ConnectionHandler
 from GUI.ConnectionLabel import ConnectionLabel
 from GUI.DetectionLabel import DetectionLabel
@@ -8,7 +9,7 @@ from GUI.UpdateTimer import UpdateTimer
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, database, connection: ConnectionHandler):
+    def __init__(self, database : DataBase, connection: ConnectionHandler):
         super().__init__()
         self.database = database
         self.connection = connection
@@ -69,8 +70,8 @@ class MainWindow(QMainWindow):
             self.attackDetectionLabel.normal_state(self.database.system_state)
 
     def closeEvent(self, event):
-        self.connection.stop()
         self.database.stop()
+        self.connection.stop()
         self.updateTimer.timeout.disconnect(self.update_gui)
         self.updateTimer.stop()
         self.close()
