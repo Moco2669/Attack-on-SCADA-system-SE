@@ -27,7 +27,7 @@ class MachineLearningModel:
         self._detection_loop.start()
 
     def run(self):
-        while self.detection_running:
+        while self.database.app_running:
             self.take_values_for_predict(self.database.registers)
             if len(self.predictionList) == 6:
                 pred = self.xgboostModel.predict(np.array(self.predictionList).reshape(1, 6))
