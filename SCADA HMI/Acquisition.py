@@ -1,5 +1,6 @@
 import time
 from threading import Thread
+from threading import Event
 from SendReadRequest import *
 from Modbus.ReadResponse import *
 from AutomationManager import *
@@ -11,6 +12,7 @@ class Executor:
         self.connection = connection
         self.database = database
         self._running = True
+        self.connected_event = Event()
         self._program_loop = Thread(target=self.acquisition_and_automation)
         self._program_loop.start()
         self.setup_handlers()
@@ -20,22 +22,29 @@ class Executor:
         def handle_stop():
             self.stop()
 
+        @self.database.event("scada_connected")
+        def handle_scada_connected():
+            self.wake_up()
+
     def acquisition_and_automation(self):
         while self._running:
-            read_requests = read_requests_from(self.database.base_info, self.database.registers_list)
-            for read_request in read_requests:
-                response = self.connection.request(read_request.as_bytes())
-                if not response:
-                    continue
-                op = eOperation(response, read_request.FunctionCode)
-                if op == False:
-                    modbus_response = ModbusReadResponse.from_bytes(response)
-                    self.database.registers[read_request.StartAddress].current_value = modbus_response.get_data
-            # ovde se pozivao log
-            # dataForCSV(registers)
+            if not self.database.scada_connected:
+                self.connected_event.wait()
+            self.acquisition()
             self.automation()
             time.sleep(1)
         print("Acquisition thread stopped.")
+
+    def acquisition(self):
+        read_requests = read_requests_from(self.database.base_info, self.database.registers_list)
+        for read_request in read_requests:
+            response = self.connection.request(read_request.as_bytes())
+            if not response:
+                continue
+            op = eOperation(response, read_request.FunctionCode)
+            if op == False:
+                modbus_response = ModbusReadResponse.from_bytes(response)
+                self.database.registers[read_request.StartAddress].current_value = modbus_response.get_data
 
     def automation_logic(self, control_rods_address, command, function_code=5):
         write_request = ModbusWriteRequest(self.database.base_info["station_address"], function_code,
@@ -60,6 +69,11 @@ class Executor:
         elif isLowAlarmActive(water_thermometer_address, self.database.registers):
             self.automation_logic(control_rods_address, 0)
 
+    def wake_up(self):
+        self.connected_event.set()
+        self.connected_event.clear()
+
     def stop(self):
         self._running = False
+        self.wake_up()
         self._program_loop.join()
