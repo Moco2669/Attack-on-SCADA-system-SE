@@ -71,7 +71,6 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         self.database.stop()
-        self.connection.stop()
         self.updateTimer.timeout.disconnect(self.update_gui)
         self.updateTimer.stop()
         self.close()

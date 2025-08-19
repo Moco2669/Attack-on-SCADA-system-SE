@@ -10,11 +10,18 @@ class Executor:
     def __init__(self, database: DataBase, connection: ConnectionHandler):
         self.connection = connection
         self.database = database
+        self._running = True
         self._program_loop = Thread(target=self.acquisition_and_automation)
         self._program_loop.start()
+        self.setup_handlers()
+
+    def setup_handlers(self):
+        @self.database.event("stop")
+        def handle_stop():
+            self.stop()
 
     def acquisition_and_automation(self):
-        while self.database.app_running:
+        while self._running:
             read_requests = read_requests_from(self.database.base_info, self.database.registers_list)
             for read_request in read_requests:
                 response = self.connection.request(read_request.as_bytes())
@@ -54,4 +61,5 @@ class Executor:
             self.automation_logic(control_rods_address, 0)
 
     def stop(self):
+        self._running = False
         self._program_loop.join()

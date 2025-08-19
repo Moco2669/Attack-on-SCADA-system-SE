@@ -1,5 +1,4 @@
-from PyQt5.QtGui import QGuiApplication, QFont, QColor
-from PyQt5.QtWidgets import QTableWidget, QHeaderView, QTableWidgetItem
+from PyQt5.QtWidgets import QTableWidget, QHeaderView
 from GUI.TableRow import TableRow
 
 

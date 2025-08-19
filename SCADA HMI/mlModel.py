@@ -14,7 +14,7 @@ class MachineLearningModel:
     def __init__(self, database: DataBase, connection: ConnectionHandler):
         self.database = database
         self.connection = connection
-        self.detection_running = True
+        self._running = True
         self.controlRodsList = list()
         self.waterThermometerList = list()
         self.predictionList = list()
@@ -25,9 +25,15 @@ class MachineLearningModel:
         self.xgboostModel.load_model('xgb.json')
         self._detection_loop = Thread(target=self.run)
         self._detection_loop.start()
+        self.setup_handlers()
+
+    def setup_handlers(self):
+        @self.database.event("stop")
+        def handle_stop():
+            self.stop()
 
     def run(self):
-        while self.database.app_running:
+        while self._running:
             self.take_values_for_predict(self.database.registers)
             if len(self.predictionList) == 6:
                 pred = self.xgboostModel.predict(np.array(self.predictionList).reshape(1, 6))
@@ -70,6 +76,6 @@ class MachineLearningModel:
             self.controlRodsList.clear()
 
     def stop(self):
-        self.detection_running = False
+        self._running = False
         self._detection_loop.join()
         print("Security thread stopped.")

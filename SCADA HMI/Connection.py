@@ -9,7 +9,7 @@ class ConnectionHandler:
     def __init__(self, database: DataBase):
         self.database = database
         self.socket = None
-        self.connection_running = True
+        self._running = True
         self.isConnected = False
         self.connection_lock = threading.RLock()
         self.connected, self.lostConnection = threading.Condition(self.connection_lock), threading.Condition(self.connection_lock)
@@ -17,9 +17,15 @@ class ConnectionHandler:
         self.running_notify = threading.Condition(self.running_lock)
         self._connection_maintainer = Thread(target=self.connection_loop)
         self._connection_maintainer.start()
+        self.setup_handlers()
+
+    def setup_handlers(self):
+        @self.database.event("stop")
+        def handle_stop():
+            self.stop()
 
     def __del__(self):
-        self.connection_running = False
+        self._running = False
         self.isConnected = False
         with self.connection_lock:
             self.lostConnection.notify_all()
@@ -32,7 +38,7 @@ class ConnectionHandler:
 
 
     def connection_loop(self):
-        while self.connection_running:
+        while self._running:
             if not self.isConnected:
                 with self.connection_lock:
                     try:
@@ -59,7 +65,7 @@ class ConnectionHandler:
         return response
 
     def stop(self):
-        self.connection_running = False
+        self._running = False
         self.isConnected = False
         with self.connection_lock:
             self.lostConnection.notify_all()

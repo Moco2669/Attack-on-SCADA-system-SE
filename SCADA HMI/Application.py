@@ -22,10 +22,6 @@ class Application:
 
     def stop(self):
         self.main_window.close()
-        self.database.stop()
-        self.connection_handler.stop()
-        self.executor.stop()
-        self.security_model.stop()
 
 
 if __name__ == "__main__":

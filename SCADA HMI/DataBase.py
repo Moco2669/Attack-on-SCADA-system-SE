@@ -13,6 +13,7 @@ DBC -> delay izmedju komandi
 
 class DataBase:
     def __init__(self):
+        self._event_handlers = {}
         self._app_running = True
         self._base_info = None
         self._registers = None
@@ -47,7 +48,20 @@ class DataBase:
         self._base_info, self._registers = load_cfg(file_name)
 
     def stop(self):
-        self._app_running = False
+        self.emit("stop")
+
+    def event(self, event_name):
+        def decorator(func):
+            if event_name not in self._event_handlers:
+                self._event_handlers[event_name] = []
+            self._event_handlers[event_name].append(func)
+            return func
+        return decorator
+
+    def emit(self, event_name, *args, **kwargs):
+        if event_name in self._event_handlers:
+            for handler in self._event_handlers[event_name]:
+                handler(*args, **kwargs)
 
     def get_rows_for_print(self) -> list[TableRow]:
         row_list = list()
