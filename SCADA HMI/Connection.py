@@ -13,8 +13,6 @@ class ConnectionHandler:
         self.isConnected = False
         self.connection_lock = threading.RLock()
         self.connected, self.lostConnection = threading.Condition(self.connection_lock), threading.Condition(self.connection_lock)
-        self.running_lock = threading.RLock()
-        self.running_notify = threading.Condition(self.running_lock)
         self._connection_maintainer = Thread(target=self.connection_loop)
         self._connection_maintainer.start()
         self.setup_handlers()
