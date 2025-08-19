@@ -17,7 +17,7 @@ class Application:
         self.database : DataBase = DataBase()
         self.connection_handler : ConnectionHandler = ConnectionHandler(self.database)
         self.executor : Executor = Executor(self.database, self.connection_handler)
-        self.security_model : MachineLearningModel = MachineLearningModel(self.database, self.connection_handler)
+        self.security_model : MachineLearningModel = MachineLearningModel(self.database)
         self.main_window : MainWindow = CustomWindow.MainWindow(self.database, self.connection_handler)
 
     def stop(self):

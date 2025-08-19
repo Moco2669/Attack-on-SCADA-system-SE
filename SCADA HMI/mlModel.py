@@ -1,19 +1,14 @@
 import time
 from threading import Thread
-
 import pandas as pd
 import xgboost as xgb
 import numpy as np
-from Connection import ConnectionHandler
 from DataBase import DataBase
 
-pdDf = pd.read_csv('learningDataNew.csv')
-pdDf.head()
 
 class MachineLearningModel:
-    def __init__(self, database: DataBase, connection: ConnectionHandler):
+    def __init__(self, database: DataBase):
         self.database = database
-        self.connection = connection
         self._running = True
         self.controlRodsList = list()
         self.waterThermometerList = list()

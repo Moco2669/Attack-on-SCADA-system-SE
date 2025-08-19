@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         self.table.set_data(data)
 
     def update_status_bar(self):
-        if self.connection.isConnected:
+        if self.database.scada_connected:
             self.connectionStatusLabel.connected()
         else:
             self.connectionStatusLabel.disconnected()

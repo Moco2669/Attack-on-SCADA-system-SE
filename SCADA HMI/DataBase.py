@@ -15,6 +15,7 @@ class DataBase:
     def __init__(self):
         self._event_handlers = {}
         self._app_running = True
+        self._scada_connected = False
         self._base_info = None
         self._registers = None
         self._system_state = "NORMAL STATE"
@@ -27,6 +28,14 @@ class DataBase:
     @property
     def app_running(self):
         return self._app_running
+
+    @property
+    def scada_connected(self):
+        return self._scada_connected
+
+    @scada_connected.setter
+    def scada_connected(self, value: bool):
+        self._scada_connected = value
 
     @system_state.setter
     def system_state(self, value: str):

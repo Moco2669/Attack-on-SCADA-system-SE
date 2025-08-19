@@ -10,7 +10,6 @@ class ConnectionHandler:
         self.database = database
         self.socket = None
         self._running = True
-        self.isConnected = False
         self.connection_lock = threading.RLock()
         self.connected, self.lostConnection = threading.Condition(self.connection_lock), threading.Condition(self.connection_lock)
         self._connection_maintainer = Thread(target=self.connection_loop)
@@ -23,32 +22,22 @@ class ConnectionHandler:
             self.stop()
 
     def __del__(self):
-        self._running = False
-        self.isConnected = False
-        with self.connection_lock:
-            self.lostConnection.notify_all()
-            self.connected.notify_all()
-        try:
-            self.socket.close()
-        except Exception as e:
-            print(f"Error closing socket: {e}")
-        self._connection_maintainer.join()
-
+        self.stop()
 
     def connection_loop(self):
         while self._running:
-            if not self.isConnected:
+            if not self.database.scada_connected:
                 with self.connection_lock:
                     try:
                         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
                         self.socket.connect(('127.0.0.1', int(self.database.base_info["num_port"])))
-                        self.isConnected = True
+                        self.database.scada_connected = True
                         self.connected.notify_all()
                         self.lostConnection.wait()
-                        self.isConnected = False
+                        self.database.scada_connected = False
                     except Exception as e:
                         print(f"Connection error: {e}")
-                        self.isConnected = False
+                        self.database.scada_connected = False
                         time.sleep(0.5)
 
     def request(self, request):
@@ -58,13 +47,13 @@ class ConnectionHandler:
                 self.socket.send(request)
                 response = self.socket.recv(1024)
             except:
-                self.isConnected = False
+                self.database.scada_connected = False
                 self.lostConnection.notify_all()
         return response
 
     def stop(self):
         self._running = False
-        self.isConnected = False
+        self.database.scada_connected = False
         with self.connection_lock:
             self.lostConnection.notify_all()
             self.connected.notify_all()

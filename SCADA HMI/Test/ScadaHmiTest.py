@@ -33,7 +33,7 @@ class TestNormalTemperature(unittest.TestCase):
     def test_app_runs_with_mock_server(self):
         QTest.qWait(4000)
         for _ in range(30):
-            if self.app.connection_handler.isConnected:
+            if self.app.database.scada_connected:
                 break
             QTest.qWait(100)
         label_style = self.app.main_window.connectionStatusLabel.styleSheet()
