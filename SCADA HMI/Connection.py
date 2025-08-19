@@ -31,7 +31,7 @@ class ConnectionHandler:
                     try:
                         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
                         self.socket.connect(('127.0.0.1', int(self.database.base_info["num_port"])))
-                        self.database.scada_connected = True
+                        self.database.scada_connected_notify()
                         self.connected.notify_all()
                         self.lostConnection.wait()
                         self.database.scada_connected = False

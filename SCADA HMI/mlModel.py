@@ -1,6 +1,6 @@
 import time
 from threading import Thread
-import pandas as pd
+from threading import Event
 import xgboost as xgb
 import numpy as np
 from DataBase import DataBase
@@ -10,6 +10,7 @@ class MachineLearningModel:
     def __init__(self, database: DataBase):
         self.database = database
         self._running = True
+        self.connection_event = Event()
         self.controlRodsList = list()
         self.waterThermometerList = list()
         self.predictionList = list()
@@ -27,8 +28,14 @@ class MachineLearningModel:
         def handle_stop():
             self.stop()
 
+        @self.database.event("scada_connected")
+        def handle_scada_connected():
+            self.wake_up()
+
     def run(self):
         while self._running:
+            if not self.database.scada_connected:
+                self.connection_event.wait()
             self.take_values_for_predict(self.database.registers)
             if len(self.predictionList) == 6:
                 pred = self.xgboostModel.predict(np.array(self.predictionList).reshape(1, 6))
@@ -70,7 +77,12 @@ class MachineLearningModel:
             self.waterThermometerList.clear()
             self.controlRodsList.clear()
 
+    def wake_up(self):
+        self.connection_event.set()
+        self.connection_event.clear()
+
     def stop(self):
         self._running = False
+        self.wake_up()
         self._detection_loop.join()
         print("Security thread stopped.")

@@ -56,6 +56,10 @@ class DataBase:
     def load_data(self, file_name):
         self._base_info, self._registers = load_cfg(file_name)
 
+    def scada_connected_notify(self):
+        self._scada_connected = True
+        self.emit("scada_connected")
+
     def stop(self):
         self.emit("stop")
 
