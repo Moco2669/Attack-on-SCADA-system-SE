@@ -30,8 +30,12 @@ class Executor:
         while self._running:
             if not self.database.scada_connected:
                 self.connected_event.wait()
-            self.acquisition()
-            self.automation()
+            try:
+                self.acquisition()
+                self.automation()
+            except Exception as error:
+                print(f"Error during acquisition or automation: {error}")
+                continue
             time.sleep(1)
         print("Acquisition thread stopped.")
 
@@ -39,24 +43,18 @@ class Executor:
         read_requests = read_requests_from(self.database.base_info, self.database.registers_list)
         for read_request in read_requests:
             response = self.connection.request(read_request.as_bytes())
-            if not response:
-                continue
-            op = eOperation(response, read_request.FunctionCode)
-            if op == False:
-                modbus_response = ModbusReadResponse.from_bytes(response)
-                self.database.registers[read_request.StartAddress].current_value = modbus_response.get_data
+            modbus_response = ModbusReadResponse.from_bytes(response)
+            modbus_response.evaluate_with(read_request)
+            self.database.registers[read_request.StartAddress].current_value = modbus_response.get_data
 
     def automation_logic(self, control_rods_address, command, function_code=5):
         write_request = ModbusWriteRequest(self.database.base_info["station_address"], function_code,
                                                self.database.registers[control_rods_address].start_address,
                                                command)
         response = self.connection.request(write_request.as_bytes())
-        if not response: return
-        op = eOperation(response, function_code)
-        if op == False:
-            modbus_write_response = ModbusWriteResponse.from_bytes(response)
-            if compare(write_request, modbus_write_response):
-                self.database.registers[control_rods_address].current_value = command
+        modbus_response = ModbusWriteResponse.from_bytes(response)
+        modbus_response.evaluate_with(write_request)
+        self.database.registers[control_rods_address].current_value = command
     """
     Vrsi se provera alarma i desava se logika automatizacije 
     """

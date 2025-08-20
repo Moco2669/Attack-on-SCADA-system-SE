@@ -1,6 +1,8 @@
 from Modbus.ModbusBase import *
 import ctypes
 
+from Modbus.ReadRequest import ModbusReadRequest
+
 
 class ModbusReadResponse(ModbusBase):
     def __init__(self, unit_id, function_code, byte_count : ctypes.c_byte, data : bytearray):
@@ -34,6 +36,21 @@ class ModbusReadResponse(ModbusBase):
     def get_data(self):
         return self.Data
 
+    def evaluate_with(self, read_request : ModbusReadRequest):
+        if not self.TransactionID == read_request.TransactionID:
+            raise ValueError("Transaction ID mismatch in response evaluation")
+        if not self.ProtocolID == read_request.ProtocolID:
+            raise ValueError("Protocol ID mismatch in response evaluation")
+        if not self.UnitID == read_request.UnitID:
+            raise ValueError("Unit ID mismatch in response evaluation")
+        if int(self.FunctionCode) == int(read_request.FunctionCode) + 128:
+            match self.ByteCount:
+                case 1:
+                    raise ValueError("Exception in response: Illegal function")
+                case 2:
+                    raise ValueError("Exception in response: Illegal data address")
+                case 3:
+                    raise ValueError("Exception in response: Illegal data value")
 
 """
 Summary how to repack this message from scada sim 

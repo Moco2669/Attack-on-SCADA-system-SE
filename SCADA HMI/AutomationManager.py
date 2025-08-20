@@ -38,26 +38,6 @@ def takeWaterThermometerAddress(signal_info):
         if value[key].signal_type == "AI":
             return key
 
-
-"""
-F-ja koja se koristi da bi znali da li je uspesno izvrsen poslati write 
-if writeRequest == writeResponse -> uspesno izvrseno 
-else nije izvrseno 
-"""
-
-
-def compare(write_request : ModbusWriteRequest, write_response : ModbusWriteResponse):
-    if (write_request.TransactionID == write_response.TransactionID and
-        write_request.ProtocolID == write_response.ProtocolID and
-        write_request.Length == write_response.Length and
-        write_request.UnitID == write_response.UnitID and
-        write_request.FunctionCode == write_response.FunctionCode and
-        write_request.RegisterAddress == write_response.RegisterAddress):
-        return True
-    else:
-        return False
-
-
 """
 Provera da li je high alarm aktiviran 
 Ako je waterThermometer >=350 aktiviran
@@ -86,21 +66,3 @@ Formira se WriteRequest nakon cega se salje poruka za promenu stanja control rod
 Nakon sto dodje odgovor prepakuje se i proverava se da li ima neka ilegalna f-ja 
 Ako nema porede se poslata i primljena poruka i konstatuje se da je vrednost promenjena 
 """
-
-
-def eOperation(message, fc):
-    functionCode = int.from_bytes(message[7:8], byteorder="big", signed=False)
-    if fc+128 == functionCode:
-        ilegalOperation = int.from_bytes(message[8:9], byteorder="big", signed=False)
-        match ilegalOperation:
-            case 1:
-                print("ILEGAL FUNCTION")
-                return True
-            case 2:
-                print("ILEGAL DATA ACCESS")
-                return True
-            case 3:
-                print("ILEGAL DATA VALUE")
-                return True
-    else:
-        return False

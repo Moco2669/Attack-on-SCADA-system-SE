@@ -1,5 +1,8 @@
 from Modbus.ModbusBase import *
 import ctypes
+
+from Modbus.WriteRequest import ModbusWriteRequest
+
 """
 Klasa je samo kako bi se razlikovali Request Write i Response za Write sustinski su isti objekti
 """
@@ -32,8 +35,26 @@ class ModbusWriteResponse(ModbusBase):
 
         return instance
 
-    def __str__(self):
-        return f"{super().__str__()},RegisterAdress:{self.RegisterAddress},RegisterValue:{self.RegisterValue}"
-
-    def getFunctionCode(self):
-        return self.FunctionCode
+    def evaluate_with(self, write_request: ModbusWriteRequest):
+        if not self.TransactionID == write_request.TransactionID:
+            raise ValueError("Transaction ID mismatch in response evaluation")
+        if not self.ProtocolID == write_request.ProtocolID:
+            raise ValueError("Protocol ID mismatch in response evaluation")
+        if not self.UnitID == write_request.UnitID:
+            raise ValueError("Unit ID mismatch in response evaluation")
+        if int(self.FunctionCode) == int(write_request.FunctionCode) + 128:
+            match self.RegisterValue:
+                case 1:
+                    raise ValueError("Exception in response: Illegal function")
+                case 2:
+                    raise ValueError("Exception in response: Illegal data address")
+                case 3:
+                    raise ValueError("Exception in response: Illegal data value")
+        if not self.FunctionCode == write_request.FunctionCode:
+            raise ValueError("Function code mismatch in response evaluation")
+        if not self.RegisterAddress == write_request.RegisterAddress:
+            raise ValueError("Register address mismatch in response evaluation")
+        if not self.RegisterValue == write_request.RegisterValue:
+            raise ValueError("Register value mismatch in response evaluation")
+        if not self.Length == write_request.Length:
+            raise ValueError("Length mismatch in response evaluation")
