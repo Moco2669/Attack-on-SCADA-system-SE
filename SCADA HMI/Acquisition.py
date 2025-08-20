@@ -38,8 +38,8 @@ class Executor:
         print("Acquisition thread stopped.")
 
     def acquisition(self):
-        read_requests = self.make_read_requests()
-        requests_and_responses = self.process_read_requests(read_requests)
+        read_requests = self.gather_read_requests()
+        requests_and_responses = self.process_requests(read_requests)
         self.database.update_registers_with(requests_and_responses)
 
     def automation_logic(self):
@@ -62,28 +62,19 @@ class Executor:
     def automation(self):
         write_requests = self.automation_logic()
         if len(write_requests) == 0: return
-        requests_and_responses = self.process_write_requests(write_requests)
+        requests_and_responses = self.process_requests(write_requests)
         self.database.registers[write_requests[0].RegisterAddress].current_value = write_requests[0].RegisterValue
 
-    def process_read_requests(self, requests: list[ModbusReadRequest]):
+    def process_requests(self, requests: list[ModbusRequest]):
         responses_to_requests = dict()
-        for read_request in requests:
-            response = self.connection.request(read_request.as_bytes())
-            modbus_response = ModbusReadResponse.from_bytes(response)
-            modbus_response.evaluate_with(read_request)
-            responses_to_requests[read_request] = modbus_response
+        for request in requests:
+            response_bytes = self.connection.request(request.as_bytes())
+            modbus_response = request.get_response_class().from_bytes(response_bytes)
+            modbus_response.evaluate_with(request)
+            responses_to_requests[request] = modbus_response
         return responses_to_requests
 
-    def process_write_requests(self, requests: list[ModbusWriteRequest]):
-        responses_to_requests = dict()
-        for write_request in requests:
-            response = self.connection.request(write_request.as_bytes())
-            modbus_response = ModbusWriteResponse.from_bytes(response)
-            modbus_response.evaluate_with(write_request)
-            responses_to_requests[write_request] = modbus_response
-        return responses_to_requests
-
-    def make_read_requests(self) -> list[ModbusReadRequest]:
+    def gather_read_requests(self) -> list[ModbusReadRequest]:
         unit_id = self.database.base_info["station_address"]
         list_of_requests = list()
         for register in self.database.registers_list:

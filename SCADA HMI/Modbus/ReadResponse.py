@@ -1,33 +1,28 @@
-from Modbus.ModbusBase import *
 import ctypes
+from Modbus.ModbusBase import ModbusBase
+from Modbus.ModbusResponse import ModbusResponse
 
-from Modbus.ReadRequest import ModbusReadRequest
 
-
-class ModbusReadResponse(ModbusBase):
-    def __init__(self, unit_id, function_code, byte_count : ctypes.c_byte, data : bytearray):
-        super().__init__(unit_id, function_code)
+class ModbusReadResponse(ModbusResponse):
+    def __init__(self, unit_id, function_code, transaction_id, length, byte_count : ctypes.c_byte, data : bytearray):
+        super().__init__(unit_id, function_code, transaction_id, length)
         self.ByteCount = byte_count
         self.Data = data
 
     @classmethod
     def from_bytes(cls, bytes_array: bytearray):
-        transaction_id = int.from_bytes(bytes_array[0:2], byteorder="big", signed=False)
-        length = int.from_bytes(bytes_array[4:6], byteorder="big", signed=False)
-        unit_id = int.from_bytes(bytes_array[6:7], byteorder="big", signed=False)
-        function_code = int.from_bytes(bytes_array[7:8], byteorder="big", signed=False)
+        transaction_id, length, unit_id, function_code = cls._create_base_from_bytes(bytes_array)
         byte_count = int.from_bytes(bytes_array[8:9], byteorder="big", signed=False)
         data = int.from_bytes(bytes_array[9:], byteorder="big", signed=False)
 
         instance = cls(
             unit_id = unit_id,
             function_code = function_code,
+            transaction_id = transaction_id,
+            length = length,
             byte_count = byte_count,
             data = data
         )
-
-        instance.TransactionID = transaction_id
-        instance.Length = length
 
         return instance
 
@@ -36,13 +31,8 @@ class ModbusReadResponse(ModbusBase):
     def get_data(self):
         return self.Data
 
-    def evaluate_with(self, read_request : ModbusReadRequest):
-        if not self.TransactionID == read_request.TransactionID:
-            raise ValueError("Transaction ID mismatch in response evaluation")
-        if not self.ProtocolID == read_request.ProtocolID:
-            raise ValueError("Protocol ID mismatch in response evaluation")
-        if not self.UnitID == read_request.UnitID:
-            raise ValueError("Unit ID mismatch in response evaluation")
+    def evaluate_with(self, read_request : ModbusBase):
+        super().evaluate_with(read_request)
         if int(self.FunctionCode) == int(read_request.FunctionCode) + 128:
             match self.ByteCount:
                 case 1:
