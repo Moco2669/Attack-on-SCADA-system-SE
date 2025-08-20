@@ -1,7 +1,6 @@
 import time
 from threading import Thread
 from threading import Event
-from SendReadRequest import *
 from Modbus.ReadResponse import *
 from AutomationManager import *
 from Connection import ConnectionHandler
@@ -40,12 +39,9 @@ class Executor:
         print("Acquisition thread stopped.")
 
     def acquisition(self):
-        read_requests = read_requests_from(self.database.base_info, self.database.registers_list)
-        for read_request in read_requests:
-            response = self.connection.request(read_request.as_bytes())
-            modbus_response = ModbusReadResponse.from_bytes(response)
-            modbus_response.evaluate_with(read_request)
-            self.database.registers[read_request.StartAddress].current_value = modbus_response.get_data
+        read_requests = self.make_read_requests()
+        requests_and_responses = self.process_requests(read_requests)
+        self.database.update_registers_with(requests_and_responses)
 
     def automation_logic(self, control_rods_address, command, function_code=5):
         write_request = ModbusWriteRequest(self.database.base_info["station_address"], function_code,
@@ -66,6 +62,23 @@ class Executor:
             self.automation_logic(control_rods_address, 65280)  # #0xFF00 za 1
         elif isLowAlarmActive(water_thermometer_address, self.database.registers):
             self.automation_logic(control_rods_address, 0)
+
+    def process_requests(self, requests: list[ModbusReadRequest]):
+        responses_to_requests = dict()
+        for read_request in requests:
+            response = self.connection.request(read_request.as_bytes())
+            modbus_response = ModbusReadResponse.from_bytes(response)
+            modbus_response.evaluate_with(read_request)
+            responses_to_requests[read_request] = modbus_response
+        return responses_to_requests
+
+    def make_read_requests(self) -> list[ModbusReadRequest]:
+        unit_id = self.database.base_info["station_address"]
+        list_of_requests = list()
+        for register in self.database.registers_list:
+            request = ModbusReadRequest(unit_id, register.read_function_code, register.start_address, register.num_reg)
+            list_of_requests.append(request)
+        return list_of_requests
 
     def wake_up(self):
         self.connected_event.set()

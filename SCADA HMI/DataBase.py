@@ -1,5 +1,8 @@
 from GUI.TableRow import TableRow
 from LoadConfig import *
+from Modbus.ReadRequest import ModbusReadRequest
+from Modbus.ReadResponse import ModbusReadResponse
+
 """
 STA - adresa stanice -1 do 254 -> adresa scada sistema
 Broj porta -> >1024 na kom je podignut(server/simulator)
@@ -52,6 +55,10 @@ class DataBase:
     @property
     def registers_list(self):
         return self._registers.values()
+
+    def update_registers_with(self, modbus_pairs: dict[ModbusReadRequest, ModbusReadResponse]):
+        for request in modbus_pairs.keys():
+            self.registers[request.StartAddress].current_value = modbus_pairs[request].get_data
 
     def load_data(self, file_name):
         self._base_info, self._registers = load_cfg(file_name)
