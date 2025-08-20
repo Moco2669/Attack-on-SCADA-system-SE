@@ -83,6 +83,15 @@ class Signal:
         else:
             return -1
 
+    @property
+    def write_function_code(self):
+        if self.signal_type == "DO":
+            return 5
+        elif self.signal_type == "AO":
+            return 6
+        else:
+            return -1
+
     @signal_type.setter
     def signal_type(self, value):
         self._SignalType = value

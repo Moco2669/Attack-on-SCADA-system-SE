@@ -1,7 +1,6 @@
 import time
 from threading import Thread
 from threading import Event
-from Modbus.ReadResponse import *
 from AutomationManager import *
 from Connection import ConnectionHandler
 
@@ -40,36 +39,48 @@ class Executor:
 
     def acquisition(self):
         read_requests = self.make_read_requests()
-        requests_and_responses = self.process_requests(read_requests)
+        requests_and_responses = self.process_read_requests(read_requests)
         self.database.update_registers_with(requests_and_responses)
 
-    def automation_logic(self, control_rods_address, command, function_code=5):
-        write_request = ModbusWriteRequest(self.database.base_info["station_address"], function_code,
-                                               self.database.registers[control_rods_address].start_address,
-                                               command)
-        response = self.connection.request(write_request.as_bytes())
-        modbus_response = ModbusWriteResponse.from_bytes(response)
-        modbus_response.evaluate_with(write_request)
-        self.database.registers[control_rods_address].current_value = command
-    """
-    Vrsi se provera alarma i desava se logika automatizacije 
-    """
+    def automation_logic(self):
+        list_of_requests = list()
+        water_thermometer_address = 2000
+        control_rods_address = 1000
+        water_thermometer = self.database.registers[water_thermometer_address]
+        control_rods = self.database.registers[control_rods_address]
+        if water_thermometer.alarm == "HIGH ALARM":
+            desired_value = 0xFF00
+        elif water_thermometer.alarm == "LOW ALARM":
+            desired_value = 0x0000
+        else: return list_of_requests
+        unit_id = self.database.base_info["station_address"]
+        write_request = ModbusWriteRequest(unit_id, control_rods.write_function_code,
+                                               control_rods.start_address, desired_value)
+        list_of_requests.append(write_request)
+        return list_of_requests
 
     def automation(self):
-        water_thermometer_address = 2000  # pravi ovo da cita iz signal info
-        control_rods_address = 1000
-        if isHighAlarmActive(water_thermometer_address, self.database.registers):
-            self.automation_logic(control_rods_address, 65280)  # #0xFF00 za 1
-        elif isLowAlarmActive(water_thermometer_address, self.database.registers):
-            self.automation_logic(control_rods_address, 0)
+        write_requests = self.automation_logic()
+        if len(write_requests) == 0: return
+        requests_and_responses = self.process_write_requests(write_requests)
+        self.database.registers[write_requests[0].RegisterAddress].current_value = write_requests[0].RegisterValue
 
-    def process_requests(self, requests: list[ModbusReadRequest]):
+    def process_read_requests(self, requests: list[ModbusReadRequest]):
         responses_to_requests = dict()
         for read_request in requests:
             response = self.connection.request(read_request.as_bytes())
             modbus_response = ModbusReadResponse.from_bytes(response)
             modbus_response.evaluate_with(read_request)
             responses_to_requests[read_request] = modbus_response
+        return responses_to_requests
+
+    def process_write_requests(self, requests: list[ModbusWriteRequest]):
+        responses_to_requests = dict()
+        for write_request in requests:
+            response = self.connection.request(write_request.as_bytes())
+            modbus_response = ModbusWriteResponse.from_bytes(response)
+            modbus_response.evaluate_with(write_request)
+            responses_to_requests[write_request] = modbus_response
         return responses_to_requests
 
     def make_read_requests(self) -> list[ModbusReadRequest]:
