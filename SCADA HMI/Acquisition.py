@@ -1,8 +1,11 @@
 import time
 from threading import Thread
 from threading import Event
-from AutomationManager import *
 from Connection import ConnectionHandler
+from DataBase import DataBase
+from Modbus.ModbusRequest import ModbusRequest
+from Modbus.ReadRequest import ModbusReadRequest
+from Modbus.WriteRequest import ModbusWriteRequest
 
 
 class Executor:
@@ -42,6 +45,12 @@ class Executor:
         requests_and_responses = self.process_requests(read_requests)
         self.database.update_registers_with(requests_and_responses)
 
+    def automation(self):
+        write_requests = self.automation_logic()
+        if len(write_requests) == 0: return
+        requests_and_responses = self.process_requests(write_requests)
+        self.database.update_registers_with_write(requests_and_responses)
+
     def automation_logic(self):
         list_of_requests = list()
         water_thermometer_address = 2000
@@ -58,12 +67,6 @@ class Executor:
                                                control_rods.start_address, desired_value)
         list_of_requests.append(write_request)
         return list_of_requests
-
-    def automation(self):
-        write_requests = self.automation_logic()
-        if len(write_requests) == 0: return
-        requests_and_responses = self.process_requests(write_requests)
-        self.database.registers[write_requests[0].RegisterAddress].current_value = write_requests[0].RegisterValue
 
     def process_requests(self, requests: list[ModbusRequest]):
         responses_to_requests = dict()
