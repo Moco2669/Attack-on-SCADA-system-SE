@@ -36,7 +36,7 @@ class Executor:
             except Exception as error:
                 print(f"Error during acquisition or automation: {error}")
                 continue
-            time.sleep(1)
+            time.sleep(self.database.base_info["dbc"])
         print("Acquisition thread stopped.")
 
     def acquisition(self):
