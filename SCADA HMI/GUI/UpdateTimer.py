@@ -2,6 +2,6 @@ from PyQt5.QtCore import QTimer
 
 
 class UpdateTimer(QTimer):
-    def __init__(self, main_window):
+    def __init__(self, main_window, function):
         super().__init__(main_window)
-        self.timeout.connect(main_window.update_gui)
+        self.timeout.connect(function)

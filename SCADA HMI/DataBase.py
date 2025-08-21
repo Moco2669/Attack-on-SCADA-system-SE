@@ -1,7 +1,10 @@
 from Connection.Connected import Connected
+from Connection.ConnectionStatus import ConnectionStatus
 from Connection.Disconnected import Disconnected
 from GUI.TableRow import TableRow
 from LoadConfig import *
+from MachineLearning.DetectedState import DetectedState
+from MachineLearning.NormalState import NormalState
 from Modbus.ModbusRequest import ModbusRequest
 from Modbus.ModbusResponse import ModbusResponse
 from Modbus.ReadRequest import ModbusReadRequest
@@ -24,10 +27,10 @@ class DataBase:
     def __init__(self):
         self._event_handlers = {}
         self._pending_events = {}
-        self._scada_connected = Disconnected()
+        self._scada_connected : ConnectionStatus = Disconnected()
         self._base_info = None
         self._registers = None
-        self._system_state = "NORMAL STATE"
+        self._system_state : DetectedState = NormalState()
         self.load_data('cfg.txt')
 
     @property
@@ -78,6 +81,10 @@ class DataBase:
         self._scada_connected = Disconnected()
         self.emit("scada_disconnected")
         self.emit("connection_update", self._scada_connected)
+
+    def update_system_state(self, new_state: DetectedState):
+        self._system_state = new_state
+        self.emit("system_state_update", self._system_state)
 
     def stop(self):
         self._scada_connected = Disconnected()

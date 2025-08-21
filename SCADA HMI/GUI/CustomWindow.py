@@ -7,24 +7,28 @@ from GUI.ConnectionLabel import ConnectionLabel
 from GUI.DetectionLabel import DetectionLabel
 from GUI.RegisterTable import RegisterTable
 from GUI.UpdateTimer import UpdateTimer
+from MachineLearning.DetectedState import DetectedState
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, database : DataBase, connection: ConnectionHandler):
+    def __init__(self, database : DataBase):
         super().__init__()
         self.database = database
-        self.connection = connection
         self.table = RegisterTable()
         self.connectionStatusLabel = ConnectionLabel()
         self.attackDetectionLabel = DetectionLabel()
         self.setup_handlers()
-        self.updateTimer = UpdateTimer(self)
+        self.updateTimer = UpdateTimer(self, self.update_table)
         self.init_ui()
 
     def setup_handlers(self):
         @self.database.event("connection_update")
         def handle_update_connection(new_status: ConnectionStatus):
             new_status.update_label(self.connectionStatusLabel)
+
+        @self.database.event("system_state_update")
+        def handle_update_system_state(new_state: DetectedState):
+            new_state.update(self.attackDetectionLabel)
 
     def set_up_window(self):
         self.setGeometry(100, 100, 800, 600)
@@ -58,23 +62,13 @@ class MainWindow(QMainWindow):
 
         self.show()
 
-    def update_gui(self):
-        self.update_status_bar()
-        self.update_table()
-
     def update_table(self):
         data = self.database.get_rows_for_print()
         self.table.set_data(data)
 
-    def update_status_bar(self):
-        if self.database.system_state in ("COMMAND INJECTION", "REPLAY ATTACK"):
-            self.attackDetectionLabel.abnormal_state(self.database.system_state)
-        else:
-            self.attackDetectionLabel.normal_state(self.database.system_state)
-
     def closeEvent(self, event):
         self.database.stop()
-        self.updateTimer.timeout.disconnect(self.update_gui)
+        self.updateTimer.timeout.disconnect(self.update_table)
         self.updateTimer.stop()
         self.close()
         event.accept()

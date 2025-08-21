@@ -4,6 +4,10 @@ from threading import Event
 import xgboost as xgb
 import numpy as np
 from DataBase import DataBase
+from MachineLearning.CommandInjection import CommandInjection
+from MachineLearning.FindingState import FindingState
+from MachineLearning.NormalState import NormalState
+from MachineLearning.ReplayAttack import ReplayAttack
 
 
 class MachineLearningModel:
@@ -44,13 +48,13 @@ class MachineLearningModel:
                 self.predictionList.clear()
             if self.systemStateCounter == 2 and np.all(self.systemStatePrevious[0] == self.systemStatePrevious[1]):
                 if self.systemStatePrevious[0][0][0] == 1:
-                    self.database.system_state = "REPLAY ATTACK"
+                    self.database.update_system_state(ReplayAttack())
                 elif self.systemStatePrevious[0][0][1] == 1:
-                    self.database.system_state = "COMMAND INJECTION"
+                    self.database.update_system_state(CommandInjection())
                 elif self.systemStatePrevious[0][0][2] == 1:
-                    self.database.system_state = "NORMAL STATE"
+                    self.database.update_system_state(NormalState())
                 else:
-                    self.database.system_state = "FINDING STATE"
+                    self.database.update_system_state(FindingState())
                 self.systemStatePrevious.clear()
                 self.systemStateCounter = 0
             elif self.systemStateCounter == 2 and np.any(self.systemStatePrevious[0] != self.systemStatePrevious[1]):

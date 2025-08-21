@@ -4,7 +4,7 @@ from GUI.StatusBarLabel import StatusBarLabel
 class DetectionLabel(StatusBarLabel):
     def __init__(self):
         super().__init__()
-        self.setText(f"STATE OF SYSTEM: Startup")
+        self.setText(f"STATE OF SYSTEM: FINDING STATE")
 
     def abnormal_state(self, state):
         self.setStyleSheet("background-color: red")
