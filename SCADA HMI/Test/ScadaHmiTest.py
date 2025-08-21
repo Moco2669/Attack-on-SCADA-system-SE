@@ -1,7 +1,7 @@
 import unittest
 from PyQt5.QtTest import QTest
 import ModbusMockServer
-import Connection
+import ConnectionHandler
 from Application import Application
 
 
@@ -34,10 +34,10 @@ class TestNormalTemperature(unittest.TestCase):
         QTest.qWait(4000)
         for _ in range(30):
             if self.app.database.scada_connected:
+                label_style = self.app.main_window.connectionStatusLabel.styleSheet()
+                self.assertIn("background-color: green", label_style)
                 break
             QTest.qWait(100)
-        label_style = self.app.main_window.connectionStatusLabel.styleSheet()
-        self.assertIn("background-color: green", label_style)
         self.assertTrue(True)
 
     def test_alarm(self):

@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QApplication
-from Connection import ConnectionHandler
+from ConnectionHandler import ConnectionHandler
 from Acquisition import Executor
 from DataBase import DataBase
 from GUI import CustomWindow

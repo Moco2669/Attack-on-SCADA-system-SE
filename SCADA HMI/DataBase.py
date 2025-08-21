@@ -1,3 +1,5 @@
+from Connection.Connected import Connected
+from Connection.Disconnected import Disconnected
 from GUI.TableRow import TableRow
 from LoadConfig import *
 from Modbus.ModbusRequest import ModbusRequest
@@ -21,7 +23,7 @@ DBC -> delay izmedju komandi
 class DataBase:
     def __init__(self):
         self._event_handlers = {}
-        self._scada_connected = False
+        self._scada_connected = Disconnected()
         self._base_info = None
         self._registers = None
         self._system_state = "NORMAL STATE"
@@ -67,15 +69,17 @@ class DataBase:
         self._base_info, self._registers = load_cfg(file_name)
 
     def scada_connected_notify(self):
-        self._scada_connected = True
+        self._scada_connected = Connected()
         self.emit("scada_connected")
+        self.emit("connection_update", self._scada_connected)
 
     def scada_disconnected_notify(self):
-        self._scada_connected = False
+        self._scada_connected = Disconnected()
         self.emit("scada_disconnected")
+        self.emit("connection_update", self._scada_connected)
 
     def stop(self):
-        self._scada_connected = False
+        self._scada_connected = Disconnected()
         self.emit("stop")
 
     def event(self, event_name):

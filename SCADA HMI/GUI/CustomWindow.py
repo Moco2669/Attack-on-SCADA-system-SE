@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout
 from PyQt5.QtCore import Qt
+from Connection.ConnectionStatus import ConnectionStatus
 from DataBase import DataBase
-from Connection import ConnectionHandler
+from ConnectionHandler import ConnectionHandler
 from GUI.ConnectionLabel import ConnectionLabel
 from GUI.DetectionLabel import DetectionLabel
 from GUI.RegisterTable import RegisterTable
@@ -16,18 +17,14 @@ class MainWindow(QMainWindow):
         self.table = RegisterTable()
         self.connectionStatusLabel = ConnectionLabel()
         self.attackDetectionLabel = DetectionLabel()
+        self.setup_handlers()
         self.updateTimer = UpdateTimer(self)
         self.init_ui()
-        self.setup_handlers()
 
     def setup_handlers(self):
-        @self.database.event("scada_disconnected")
-        def handle_scada_disconnected():
-            self.connectionStatusLabel.disconnected()
-
-        @self.database.event("scada_connected")
-        def handle_scada_connected():
-            self.connectionStatusLabel.connected()
+        @self.database.event("connection_update")
+        def handle_update_connection(new_status: ConnectionStatus):
+            new_status.update_label(self.connectionStatusLabel)
 
     def set_up_window(self):
         self.setGeometry(100, 100, 800, 600)

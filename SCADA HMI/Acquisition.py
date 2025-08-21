@@ -1,7 +1,7 @@
 import time
 from threading import Thread
 from threading import Event
-from Connection import ConnectionHandler
+from ConnectionHandler import ConnectionHandler
 from DataBase import DataBase
 from Modbus.ModbusRequest import ModbusRequest
 from Modbus.ReadRequest import ModbusReadRequest

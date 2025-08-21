@@ -4,6 +4,7 @@ from GUI.StatusBarLabel import StatusBarLabel
 class ConnectionLabel(StatusBarLabel):
     def __init__(self):
         super().__init__()
+        self.disconnected()
 
     def disconnected(self):
         self.setText("DISCONNECTED")
