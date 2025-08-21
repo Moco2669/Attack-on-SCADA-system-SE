@@ -23,6 +23,7 @@ DBC -> delay izmedju komandi
 class DataBase:
     def __init__(self):
         self._event_handlers = {}
+        self._pending_events = {}
         self._scada_connected = Disconnected()
         self._base_info = None
         self._registers = None
@@ -87,6 +88,10 @@ class DataBase:
             if event_name not in self._event_handlers:
                 self._event_handlers[event_name] = []
             self._event_handlers[event_name].append(func)
+            if event_name in self._pending_events:
+                for args, kwargs in self._pending_events[event_name]:
+                    func(*args, **kwargs)
+                del self._pending_events[event_name]
             return func
         return decorator
 
@@ -94,6 +99,10 @@ class DataBase:
         if event_name in self._event_handlers:
             for handler in self._event_handlers[event_name]:
                 handler(*args, **kwargs)
+        else:
+            if event_name not in self._pending_events:
+                self._pending_events[event_name] = []
+            self._pending_events[event_name].append((args, kwargs))
 
     def get_rows_for_print(self) -> list[TableRow]:
         row_list = list()
