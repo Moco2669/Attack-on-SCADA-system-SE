@@ -34,10 +34,10 @@ class ConnectionHandler:
                         self.database.scada_connected_notify()
                         self.connected.notify_all()
                         self.lostConnection.wait()
-                        self.database.scada_connected = False
+                        self.database.scada_disconnected_notify()
                     except Exception as e:
                         print(f"Connection error: {e}")
-                        self.database.scada_connected = False
+                        self.database.scada_disconnected_notify()
                         time.sleep(0.5)
 
     def request(self, request):
@@ -47,13 +47,12 @@ class ConnectionHandler:
                 self.socket.send(request)
                 response = self.socket.recv(1024)
             except:
-                self.database.scada_connected = False
+                self.database.scada_disconnected_notify()
                 self.lostConnection.notify_all()
         return response
 
     def stop(self):
         self._running = False
-        self.database.scada_connected = False
         with self.connection_lock:
             self.lostConnection.notify_all()
             self.connected.notify_all()

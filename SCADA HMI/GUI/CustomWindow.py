@@ -18,6 +18,16 @@ class MainWindow(QMainWindow):
         self.attackDetectionLabel = DetectionLabel()
         self.updateTimer = UpdateTimer(self)
         self.init_ui()
+        self.setup_handlers()
+
+    def setup_handlers(self):
+        @self.database.event("scada_disconnected")
+        def handle_scada_disconnected():
+            self.connectionStatusLabel.disconnected()
+
+        @self.database.event("scada_connected")
+        def handle_scada_connected():
+            self.connectionStatusLabel.connected()
 
     def set_up_window(self):
         self.setGeometry(100, 100, 800, 600)
@@ -60,10 +70,6 @@ class MainWindow(QMainWindow):
         self.table.set_data(data)
 
     def update_status_bar(self):
-        if self.database.scada_connected:
-            self.connectionStatusLabel.connected()
-        else:
-            self.connectionStatusLabel.disconnected()
         if self.database.system_state in ("COMMAND INJECTION", "REPLAY ATTACK"):
             self.attackDetectionLabel.abnormal_state(self.database.system_state)
         else:

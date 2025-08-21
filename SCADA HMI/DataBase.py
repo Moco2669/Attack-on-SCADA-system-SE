@@ -21,7 +21,6 @@ DBC -> delay izmedju komandi
 class DataBase:
     def __init__(self):
         self._event_handlers = {}
-        self._app_running = True
         self._scada_connected = False
         self._base_info = None
         self._registers = None
@@ -31,10 +30,6 @@ class DataBase:
     @property
     def system_state(self):
         return self._system_state
-
-    @property
-    def app_running(self):
-        return self._app_running
 
     @property
     def scada_connected(self):
@@ -75,7 +70,12 @@ class DataBase:
         self._scada_connected = True
         self.emit("scada_connected")
 
+    def scada_disconnected_notify(self):
+        self._scada_connected = False
+        self.emit("scada_disconnected")
+
     def stop(self):
+        self._scada_connected = False
         self.emit("stop")
 
     def event(self, event_name):
