@@ -31,16 +31,19 @@ class ConnectionHandler:
             if not self.database.scada_connected:
                 with self.connection_lock:
                     try:
-                        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-                        self.socket.connect(('127.0.0.1', int(self.database.base_info["num_port"])))
-                        self.database.update_connection_status(Connected())
+                        self.connect()
                         self.connected.notify_all()
                         self.lostConnection.wait()
-                        self.database.update_connection_status(Disconnected())
+                        self.disconnect()
                     except Exception as e:
                         print(f"Connection error: {e}")
-                        self.database.update_connection_status(Disconnected())
+                        self.disconnect()
                         time.sleep(0.5)
+
+    def connect(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+        self.socket.connect(('127.0.0.1', int(self.database.base_info["num_port"])))
+        self.database.update_connection_status(Connected())
 
     def request(self, request):
         response = None
@@ -49,9 +52,16 @@ class ConnectionHandler:
                 self.socket.send(request)
                 response = self.socket.recv(1024)
             except:
-                self.database.update_connection_status(Disconnected())
+                self.disconnect()
                 self.lostConnection.notify_all()
         return response
+
+    def disconnect(self):
+        try:
+            self.socket.close()
+        except:
+            pass
+        self.database.update_connection_status(Disconnected())
 
     def stop(self):
         self._running = False
