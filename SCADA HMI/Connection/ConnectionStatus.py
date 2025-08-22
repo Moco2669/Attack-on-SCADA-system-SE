@@ -14,3 +14,8 @@ class ConnectionStatus(ABC):
     @abstractmethod
     def update_label(label: ConnectionLabel) -> None:
         pass
+
+    @staticmethod
+    @abstractmethod
+    def as_event() -> str:
+        pass

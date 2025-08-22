@@ -72,14 +72,9 @@ class DataBase:
     def load_data(self, file_name):
         self._base_info, self._registers = load_cfg(file_name)
 
-    def scada_connected_notify(self):
-        self._scada_connected = Connected()
-        self.emit("scada_connected")
-        self.emit("connection_update", self._scada_connected)
-
-    def scada_disconnected_notify(self):
-        self._scada_connected = Disconnected()
-        self.emit("scada_disconnected")
+    def update_connection_status(self, new_status: ConnectionStatus):
+        self._scada_connected = new_status
+        self.emit(new_status.as_event())
         self.emit("connection_update", self._scada_connected)
 
     def update_system_state(self, new_state: DetectedState):

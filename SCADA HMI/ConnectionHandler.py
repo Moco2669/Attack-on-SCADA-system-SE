@@ -3,6 +3,8 @@ import threading
 from threading import Thread
 import time
 import DataBase
+from Connection.Connected import Connected
+from Connection.Disconnected import Disconnected
 
 
 class ConnectionHandler:
@@ -31,13 +33,13 @@ class ConnectionHandler:
                     try:
                         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
                         self.socket.connect(('127.0.0.1', int(self.database.base_info["num_port"])))
-                        self.database.scada_connected_notify()
+                        self.database.update_connection_status(Connected())
                         self.connected.notify_all()
                         self.lostConnection.wait()
-                        self.database.scada_disconnected_notify()
+                        self.database.update_connection_status(Disconnected())
                     except Exception as e:
                         print(f"Connection error: {e}")
-                        self.database.scada_disconnected_notify()
+                        self.database.update_connection_status(Disconnected())
                         time.sleep(0.5)
 
     def request(self, request):
@@ -47,7 +49,7 @@ class ConnectionHandler:
                 self.socket.send(request)
                 response = self.socket.recv(1024)
             except:
-                self.database.scada_disconnected_notify()
+                self.database.update_connection_status(Disconnected())
                 self.lostConnection.notify_all()
         return response
 

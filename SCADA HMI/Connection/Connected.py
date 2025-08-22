@@ -12,3 +12,7 @@ class Connected(ConnectionStatus):
     @staticmethod
     def update_label(label: ConnectionLabel):
         label.connected()
+
+    @staticmethod
+    def as_event():
+        return "scada_connected"
