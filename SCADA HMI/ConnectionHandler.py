@@ -12,6 +12,7 @@ class ConnectionHandler:
         self.database = database
         self.socket = None
         self._running = True
+        self.connected_event = threading.Event()
         self.connection_lock = threading.RLock()
         self.connected, self.lostConnection = threading.Condition(self.connection_lock), threading.Condition(self.connection_lock)
         self._connection_maintainer = Thread(target=self.connection_loop)
@@ -22,6 +23,10 @@ class ConnectionHandler:
         @self.database.event("stop")
         def handle_stop():
             self.stop()
+
+        @self.database.event("scada_connected")
+        def handle_scada_connected():
+            self.wake_up()
 
     def __del__(self):
         self.stop()
@@ -47,13 +52,16 @@ class ConnectionHandler:
 
     def request(self, request):
         response = None
-        with self.connection_lock:
-            try:
-                self.socket.send(request)
-                response = self.socket.recv(1024)
-            except:
-                self.disconnect()
-                self.lostConnection.notify_all()
+        while not response and self._running:
+            if not self.database.scada_connected:
+                self.connected_event.wait()
+            with self.connection_lock:
+                try:
+                    self.socket.send(request)
+                    response = self.socket.recv(1024)
+                except:
+                    self.disconnect()
+                    self.lostConnection.notify_all()
         return response
 
     def disconnect(self):
@@ -63,8 +71,13 @@ class ConnectionHandler:
             pass
         self.database.update_connection_status(Disconnected())
 
+    def wake_up(self):
+        self.connected_event.set()
+        self.connected_event.clear()
+
     def stop(self):
         self._running = False
+        self.wake_up()
         with self.connection_lock:
             self.lostConnection.notify_all()
             self.connected.notify_all()
