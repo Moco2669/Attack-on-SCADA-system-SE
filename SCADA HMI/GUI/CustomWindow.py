@@ -2,11 +2,9 @@ from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QHBoxLayout
 from PyQt5.QtCore import Qt
 from Connection.ConnectionStatus import ConnectionStatus
 from DataBase import DataBase
-from ConnectionHandler import ConnectionHandler
 from GUI.ConnectionLabel import ConnectionLabel
 from GUI.DetectionLabel import DetectionLabel
 from GUI.RegisterTable import RegisterTable
-from GUI.UpdateTimer import UpdateTimer
 from MachineLearning.DetectedState import DetectedState
 
 
@@ -18,7 +16,6 @@ class MainWindow(QMainWindow):
         self.connectionStatusLabel = ConnectionLabel()
         self.attackDetectionLabel = DetectionLabel()
         self.setup_handlers()
-        self.updateTimer = UpdateTimer(self, self.update_table)
         self.init_ui()
 
     def setup_handlers(self):
@@ -29,6 +26,11 @@ class MainWindow(QMainWindow):
         @self.database.event("system_state_update")
         def handle_update_system_state(new_state: DetectedState):
             new_state.update(self.attackDetectionLabel)
+
+        @self.database.event("registers_update")
+        def handle_update_registers(registers):
+            rows = self.table.rows_from(registers)
+            self.table.update_data_signal.emit(rows)
 
     def set_up_window(self):
         self.setGeometry(100, 100, 800, 600)
@@ -58,17 +60,9 @@ class MainWindow(QMainWindow):
         self.make_central_widget_with(layout)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
-        self.updateTimer.start(500)
-
         self.show()
-
-    def update_table(self):
-        data = self.database.get_rows_for_print()
-        self.table.set_data(data)
 
     def closeEvent(self, event):
         self.database.stop()
-        self.updateTimer.timeout.disconnect(self.update_table)
-        self.updateTimer.stop()
         self.close()
         event.accept()

@@ -41,14 +41,6 @@ class DataBase:
     def scada_connected(self):
         return self._scada_connected
 
-    @scada_connected.setter
-    def scada_connected(self, value: bool):
-        self._scada_connected = value
-
-    @system_state.setter
-    def system_state(self, value: str):
-        self._system_state = value
-
     @property
     def base_info(self):
         return self._base_info
@@ -64,10 +56,12 @@ class DataBase:
     def update_registers_with(self, modbus_pairs: dict[ModbusReadRequest, ModbusReadResponse]):
         for request in modbus_pairs.keys():
             self.registers[request.StartAddress].current_value = modbus_pairs[request].get_data
+        self.emit("registers_update", self.registers)
 
     def update_registers_with_write(self, modbus_pairs: dict[ModbusWriteRequest, ModbusWriteResponse]):
         for request in modbus_pairs.keys():
             self.registers[request.RegisterAddress].current_value = modbus_pairs[request].RegisterValue
+        self.emit("registers_update", self.registers)
 
     def load_data(self, file_name):
         self._base_info, self._registers = load_cfg(file_name)
@@ -75,11 +69,11 @@ class DataBase:
     def update_connection_status(self, new_status: ConnectionStatus):
         self._scada_connected = new_status
         self.emit(new_status.as_event())
-        self.emit("connection_update", self._scada_connected)
+        self.emit("connection_update", self.scada_connected)
 
     def update_system_state(self, new_state: DetectedState):
         self._system_state = new_state
-        self.emit("system_state_update", self._system_state)
+        self.emit("system_state_update", self.system_state)
 
     def stop(self):
         self._scada_connected = Disconnected()
@@ -105,9 +99,3 @@ class DataBase:
             if event_name not in self._pending_events:
                 self._pending_events[event_name] = []
             self._pending_events[event_name].append((args, kwargs))
-
-    def get_rows_for_print(self) -> list[TableRow]:
-        row_list = list()
-        for key, signal in self.registers.items():
-            row_list.append(TableRow(signal))
-        return row_list
