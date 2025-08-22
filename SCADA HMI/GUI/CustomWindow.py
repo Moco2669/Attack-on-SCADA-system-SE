@@ -64,5 +64,4 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         self.database.stop()
-        self.close()
         event.accept()
