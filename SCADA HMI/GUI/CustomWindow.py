@@ -5,6 +5,7 @@ from DataBase import DataBase
 from GUI.ConnectionLabel import ConnectionLabel
 from GUI.DetectionLabel import DetectionLabel
 from GUI.RegisterTable import RegisterTable
+from GUI.UpdateTimer import UpdateTimer
 from MachineLearning.DetectedState import DetectedState
 
 
@@ -21,11 +22,11 @@ class MainWindow(QMainWindow):
     def setup_handlers(self):
         @self.database.event("connection_update")
         def handle_update_connection(new_status: ConnectionStatus):
-            new_status.update_label(self.connectionStatusLabel)
+            self.connectionStatusLabel.update_signal.emit(new_status)
 
         @self.database.event("system_state_update")
         def handle_update_system_state(new_state: DetectedState):
-            new_state.update(self.attackDetectionLabel)
+            self.attackDetectionLabel.update_signal.emit(new_state)
 
         @self.database.event("registers_update")
         def handle_update_registers(registers):

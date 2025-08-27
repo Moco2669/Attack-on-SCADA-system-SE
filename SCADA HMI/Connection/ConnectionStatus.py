@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from GUI.ConnectionLabel import ConnectionLabel
 
 
 class ConnectionStatus(ABC):
@@ -12,7 +11,7 @@ class ConnectionStatus(ABC):
 
     @staticmethod
     @abstractmethod
-    def update_label(label: ConnectionLabel) -> None:
+    def update_label(label) -> None:
         pass
 
     @staticmethod
