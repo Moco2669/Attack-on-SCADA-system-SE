@@ -4,8 +4,8 @@ from Connection.ConnectionStatus import ConnectionStatus
 from DataBase import DataBase
 from GUI.ConnectionLabel import ConnectionLabel
 from GUI.DetectionLabel import DetectionLabel
+from GUI.HistoryGraph import HistoryGraph
 from GUI.RegisterTable import RegisterTable
-from GUI.UpdateTimer import UpdateTimer
 from MachineLearning.DetectedState import DetectedState
 
 
@@ -16,6 +16,7 @@ class MainWindow(QMainWindow):
         self.table = RegisterTable()
         self.connectionStatusLabel = ConnectionLabel()
         self.attackDetectionLabel = DetectionLabel()
+        self.registerGraph = HistoryGraph()
         self.setup_handlers()
         self.init_ui()
 
@@ -32,6 +33,7 @@ class MainWindow(QMainWindow):
         def handle_update_registers(registers):
             rows = self.table.rows_from(registers)
             self.table.update_data_signal.emit(rows)
+            self.registerGraph.update_signal.emit(registers)
 
     def set_up_window(self):
         self.setGeometry(100, 100, 800, 600)
@@ -52,6 +54,7 @@ class MainWindow(QMainWindow):
     def make_layout_with(self, status_bar):
         layout = QVBoxLayout()
         layout.addWidget(self.table)
+        layout.addWidget(self.registerGraph)
         layout.addLayout(status_bar)
         return layout
 

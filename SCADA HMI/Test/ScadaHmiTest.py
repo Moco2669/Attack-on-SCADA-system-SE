@@ -27,7 +27,9 @@ class TestNormalTemperature(unittest.TestCase):
         result = self.query_gui_for(self.temperature,
                                     self.control_rods,
                                     self.check_temperature,
-                                    self.check_control_rods)
+                                    self.check_control_rods,
+                                    self.check_graph_temperature,
+                                    self.check_graph_control_rods)
         self.assertTrue(result, f"Displayed values are not {self.temperature} and {self.control_rods}")
 
     def test_app_runs_with_mock_server(self):
@@ -44,17 +46,40 @@ class TestNormalTemperature(unittest.TestCase):
         result = self.query_gui_for(self.temperature_alarm,
                                     self.control_rods_alarm,
                                     self.check_temperature_alarm,
-                                    self.check_control_rods_alarm)
+                                    self.check_control_rods_alarm,
+                                    self.skip_test,
+                                    self.skip_test)
         self.assertTrue(result, f"Alarms are not {self.temperature_alarm} and {self.control_rods_alarm}")
 
-    def query_gui_for(self, temperature, control_rods, check_temperature, check_control_rods):
+    def query_gui_for(self, temperature, control_rods, check_temperature, check_control_rods, graph_check_temperature, graph_check_control_rods):
         table = self.app.main_window.table
+        graph = self.app.main_window.registerGraph
         for _ in range(30):
             table_data = self.get_table_data(table)
-            if check_temperature(table_data, temperature) and check_control_rods(table_data, control_rods):
+            graph_last_values = self.get_graph_data(graph)
+            if (check_temperature(table_data, temperature)
+            and check_control_rods(table_data, control_rods)
+            and graph_check_temperature(graph_last_values, temperature)
+            and graph_check_control_rods(graph_last_values, control_rods)):
                 return True
             QTest.qWait(100)
         return False
+
+    @staticmethod
+    def skip_test(data, value):
+        return True
+
+    @staticmethod
+    def check_graph_temperature(data, value):
+        if data:
+            return int(data['WaterThermometer']) == int(value)
+        else: return False
+
+    @staticmethod
+    def check_graph_control_rods(data, value):
+        if data:
+            return int(data['ControlRods']) == int(value) * 700
+        else: return False
 
     @staticmethod
     def check_temperature_alarm(data, value):
@@ -79,6 +104,18 @@ class TestNormalTemperature(unittest.TestCase):
         if data:
             return data[0][3] == value
         else: return False
+
+    @staticmethod
+    def get_graph_data(a_graph):
+        series_dict = a_graph.series_dict
+        last_values = {}
+        for register_name, series in series_dict.items():
+            if series.count() > 0:
+                last_point = series.at(series.count() - 1)
+                last_values[register_name] = last_point.y()
+            else:
+                last_values[register_name] = None
+        return last_values
 
     @staticmethod
     def get_table_data(a_table):
